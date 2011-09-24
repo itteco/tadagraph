@@ -8,9 +8,9 @@ Install
 
 2. Install [CouchDB](http://couchdb.apache.org/). Required version 1.1.0+
 
-3. Install `couchapp <http://www.couchapp.org/page/installing>`_.
+3. Install [couchapp](http://www.couchapp.org/page/installing).
 
-4. Go to couchdb `utilities <http://localhost:5984/_utils/`>_ and create a database where you want to push tadagraph core couchapp
+4. Go to couchdb utilities page (by default [http://localhost:5984/_utils](http://localhost:5984/_utils)) and create a database where you want to push tadagraph core couchapp
 
 Usage
 -----
@@ -23,3 +23,6 @@ Push core app to your database
 
     $ couchapp push http://localhost:5984/yourdb 
 
+Visit tadagraph core
+
+http://localhost:5984/yourdb/_design/core/index.html
