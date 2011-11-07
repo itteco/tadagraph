@@ -22,11 +22,11 @@ Or go to couchdb utilities page (by default [http://localhost:5984/_utils](http:
 
 3. Go to core couchapp 
 
-    $ cd tadagraph/core
+     $ cd tadagraph/core
 
 4. Push core app to your database
 
-    $ couchapp push http://localhost:5984/yourdb 
+     $ couchapp push http://localhost:5984/yourdb 
 
 5. Visit tadagraph core
 
