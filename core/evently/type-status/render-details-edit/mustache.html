@@ -1,0 +1,43 @@
+<li class="editor inline flow document" data-id="{{id}}">
+    <div class="col heading">
+        <img src="{{creatorAvatar}}" class="avatar" alt="" title="{{created_by_nickname}}" onerror="defaultAvatar(event)" data-owner="{{created_by_id}}" />
+    </div>
+    <div class="col content">
+        <div class="data">
+
+            <div class="title">
+                <span class="member" title="{{created_by_nickname}}">{{created_by_nickname}}</span>
+                <span class="timestamp">{{cdate}} at {{ctime}}</span>
+            </div>
+
+            <div class="wrapper">
+                <textarea class="input">{{{body}}}</textarea>
+            </div>
+
+            <div class="table options">
+                <div class="tr">
+                    <div class="td uploader">
+                        <div id="editor-tada-uploader"></div>
+                    </div>
+                    <div class="td due">
+                        <input type="text" class="input datepicker" readonly="readonly" value="Due date" />
+                        <a href="#" class="button meta-remove hidden" title="Reset"><span class="icon meta-remove"></span></a>
+                    </div>
+                    <div class="td buttons">
+                        <ul class="editor-buttons">
+                            <li><a href="#cancel" class="editor-cancel">Cancel</a></li>
+                            <li><a href="#save" class="editor-save"><span>Save</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control uploader">
+                <div id="editor-tada-uploader-list">
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="attachments-manager hidden"></div>
+</li>

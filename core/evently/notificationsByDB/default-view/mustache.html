@@ -1,0 +1,47 @@
+<li class="item hover {{#offline}} offline {{/offline}} {{#isNew}} new-item {{/isNew}}" data-id="{{id}}" data-refid="{{docId}}">
+    <a href="{{docUrl}}" class="button details" title="Document details"><span class="icons details"></span></a>
+    <a href="#" class="button star" title="Star" data-follow-id="{{docId}}"><span class="icons star"></span></a>
+    <div class="col heading">
+        {{#forwarded}}
+        <div class="border"></div>
+        <div class="shadow"></div>
+        <img src="{{forwarderAvatar}}" width="32" height="32" class="avatar reply tooltip" alt="" title="" onerror="defaultAvatar(event)"/>
+        {{/forwarded}}
+        <img src="{{creatorAvatar}}" class="avatar {{#myself}} account-of-myself {{/myself}}" alt="" title="{{created_by_nickname}}" data-owner="{{created_by_id}}" onerror="defaultAvatar(event)"/>
+        <div class="data">
+            <span class="member overflow {{#myself}} account-of-myself {{/myself}}" title="{{created_by_nickname}}">{{created_by_nickname}}</span>
+            <a href="{{docUrl}}" class="timestamp" title="{{created_at_orig}}">{{created_at}}</a>
+        </div>
+    </div>
+    <div class="col content">
+        <div class="data {{^body}} empty{{/body}}">
+            {{#badge}}{{^hidden}}
+            <span class="badge {{type}}">{{type}}</span>
+            {{/hidden}}{{/badge}}
+            {{#published}}
+            <a href="#" class="badge-button published">
+                <span class="badge published" title="Unpublish">
+                    <span class="icons published"></span>
+                </span>
+            </a>
+            {{/published}}
+            <span class="text">
+                {{{body}}}
+            </span>
+            <span class="text-meta">
+                {{#intId}}<a href="{{spaceUrl}}#{{intId}}/details">#{{intId}}</a> {{/intId}}
+                {{#hiddenTopics}}<a href="{{url}}">[{{title}}]</a> {{/hiddenTopics}}
+                {{#hiddenTags}}<a data-tag="{{tag}}" href="{{url}}">#{{tag}}</a> {{/hiddenTags}}
+                {{#hiddenCp}}<a href="javascript:void(0);">${{hiddenCp}}cp</a> {{/hiddenCp}}
+            </span>
+        </div>
+        {{>embedded}}
+        {{>attachments}}
+        {{#showMeta}}
+            <ul class="meta">
+                {{#spaceName}}<li><a href="{{spaceUrl}}">{{spaceName}}</a></li>{{/spaceName}}
+                {{#reply_to}}<li><a href="{{reply_url}}">In reply to {{reply_to}}</a></li>{{/reply_to}}
+            </ul>
+        {{/showMeta}}
+    </div>
+</li>

@@ -1,0 +1,8 @@
+{
+    ".editor-cancel": {
+        "click": ["render-details"]
+    },
+    ".editor-save": {
+        "click": ["save"]
+    }
+}

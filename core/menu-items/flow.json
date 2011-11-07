@@ -1,0 +1,12 @@
+{
+    "orderIndex": 100,
+    "id": "flow",
+    "title": "Flow", 
+    "default": true,
+    "filters": {
+        "hide-others": {
+            "list": "members"
+        },
+        "hide-unstarred": false
+    }
+}

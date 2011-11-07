@@ -1,0 +1,34 @@
+<li class="item document tada hover context-menu-disabled {{^_rev}} offline {{/_rev}}" data-id="{{id}}">
+    <a href="#" class="button star" title="Star" data-follow-id="{{id}}"><span class="icons star"></span></a>
+    <div class="item-context document">
+        <ul>
+            {{#forwardable}}
+            <li><a href="#forward" class="button forward" title="Forward"><span class="icons forward"></span></a></li>
+            {{/forwardable}}
+            {{#editable}}
+            <li><a href="#edit" class="button edit" title="Edit"><span class="icons edit"></span></a></li>
+            {{/editable}}
+        </ul>
+    </div>
+    <div class="col heading">
+        <img src="{{creatorAvatar}}" class="avatar {{#hideCreator}} hidden{{/hideCreator}}" alt="" title="{{created_by_nickname}}" onerror="defaultAvatar(event)" data-owner="{{created_by_id}}" />
+    </div>
+    <div class="col content">
+        {{^hideCreator}}
+            <div class="title">
+                <span class="member" title="{{created_by_nickname}}">{{created_by_nickname}}</span>
+            </div>
+        {{/hideCreator}}
+        <div class="data">
+            {{#badge}}{{^hidden}}
+            <span class="badge {{type}}">{{type}}</span>
+            {{/hidden}}{{/badge}}
+            <span class="text">{{{body}}}</span>
+        </div>
+        {{>attachments}}
+        {{>embedded_details}}
+        <div class="meta summary">
+            Posted {{cdate}} at {{ctime}} {{#reply_to}} in reply to {{reply_to}}: <a href="{{reply_url}}">{{reply_body}}</a>{{/reply_to}}
+        </div>
+    </div>
+</li>

@@ -1,0 +1,8 @@
+{
+    ".cancel": {
+        "click": ["cancel"]
+    },
+    ".submit": {
+        "click": ["save"]
+    }
+}

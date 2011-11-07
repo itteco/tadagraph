@@ -1,0 +1,17 @@
+{{#show}}
+<div class="twidget plist recent-topics">
+    <div class="twidget-header">
+        <h2>{{title}}</h2>
+    </div>
+    <div class="twidget-body">
+        <ul>
+            {{#topics}}
+                <li class="item topic-{{id}}"><span class="wrap"><a href="{{url}}" {{#selected}}class="selected"{{/selected}}>{{title}}</a></span></li>
+            {{/topics}}
+            {{#all_topics_url}}
+                <li class="more"><a href="{{all_topics_url}}">view all</a></li>
+            {{/all_topics_url}}
+        </ul>
+    </div>
+</div>
+{{/show}}

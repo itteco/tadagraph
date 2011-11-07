@@ -1,0 +1,7 @@
+<ul class="flow" style="display: none;">
+    <li class="item fake hidden"></li>
+{{#items}}
+    <li class="item-stub" data-class="level-{{level}} {{#isNew}} new-item {{/isNew}}" data-level="{{level}}" data-id="{{id}}"></li>
+{{/items}}
+</ul>
+<div class="create-helper hidden"></div>

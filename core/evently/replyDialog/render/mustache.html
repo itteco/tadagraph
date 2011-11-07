@@ -1,0 +1,57 @@
+
+
+<div class="tdialog titem reply">
+    <div class="tdialog-content line">
+
+        <ul class="flow"></ul>
+
+        <div class="reply-form">
+            <img src="{{avatar}}" class="avatar" alt="" title="{{nickname}}" onerror="defaultAvatar(event)"/>
+            <div class="data">
+
+                <div class="nform">
+                    <div class="wrapper">
+                        <textarea class="input" placeholder="What's on your mind?"></textarea>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- uploader -->
+        <div class="ui-uploader ui-uploader-button">
+            <div class="file-uploader"></div>
+        </div>
+
+        <div class="controls">
+            <ul class="items">
+                <li class="item message hidden">
+                    <!--
+                        also available:
+                            item message error
+                            item message success
+                    -->
+                    Message here
+                </li>
+                <li class="item hidden sys-private-options">
+                    <select>
+                        <option value="">Private note</option>
+                        <option value="#dm ">Direct message</option>
+                    </select>
+                </li>
+                <li class="item button">
+                    <a href="#" class="button-submit">Reply</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- uploader list -->
+        <div class="ui-uploader ui-uploader-list">
+            <div class="file-uploader-list"></div>
+        </div>
+        
+        <div class="attachments-manager hidden"></div>
+
+    </div>
+</div>

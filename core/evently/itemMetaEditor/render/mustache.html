@@ -1,0 +1,9 @@
+<div class="meta-input">
+    <a href="#close" class="button close" title="Close"><span class="icon close"></span></a>
+    <input type="text" class="input" placeholder="Type tag, topic or member" value="{{tail}}">
+</div>
+<ul class="meta-list">
+    {{#items}}
+    <li class="meta-item" data-type="{{type}}" data-value="{{id}}"><span class="text">{{label}}</span><a href="#delete" class="button meta-delete" title="Delete"><span class="icons meta-delete"></span></a></li>
+    {{/items}}
+</ul>

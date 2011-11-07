@@ -1,0 +1,21 @@
+<div class="twidget markup">
+    <div class="twidget-header">
+        <h2>Markup</h2>
+    </div>
+    <div class="twidget-body">
+
+        <div class="editor editor-meta">
+            <ul class="meta-list">
+                {{#items}}
+                <li class="meta-item" data-type="{{type}}" data-value="{{id}}">
+                    <span class="text">{{label}}</span>
+                    <a href="#remove" class="button meta-delete" title="Delete"><span class="icons meta-delete"></span></a>
+                </li>
+                {{/items}}
+            </ul>
+            <div class="meta-input">
+                <input type="text" class="input" placeholder="Type tag, topic or member" value="{{tail}}">
+            </div>
+        </div>
+     </div>
+</div>

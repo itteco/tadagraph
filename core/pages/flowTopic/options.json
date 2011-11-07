@@ -1,0 +1,9 @@
+{
+    "widget": "pageMain2", 
+    "app": "core",
+    "widgets": [{
+        "widget": "notificationsFiltered",
+        "app": "core",
+        "container": ".container-main-column"
+    }]
+}

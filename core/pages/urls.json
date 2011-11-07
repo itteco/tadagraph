@@ -1,0 +1,12 @@
+[
+    {"pattern": "^topics(?:/#([\\w-]+))?/?$",                "page": "topics"},
+                                                         
+    {"pattern": "^#(\\d+)/details/?$",                       "page": "docDetails"},
+    {"pattern": "^([a-z0-9_-]+)/details/?$",                 "page": "docDetails"},
+
+    {"pattern": "^([a-z0-9_-]+)/flow/?$",                    "page": "flowDoc"},
+    
+    {"pattern": "^([a-z0-9_-]+)(?:/#([\\w-]+))?/?$",         "page": "flowTopic"},
+    
+    {"pattern": "^(?:#([\\w-]+))?/?$",                       "page": "flow"}
+]

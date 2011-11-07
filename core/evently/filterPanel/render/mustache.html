@@ -1,0 +1,28 @@
+{{#show}}
+<div class="twidget-header">
+    <h2>Filter</h2>
+</div>
+<div class="twidget-body">
+    <ul>
+        {{#filters}}
+        <li class="item">
+            <input type="checkbox" id="filter-{{id_rand}}-{{id}}" data-filter="{{id}}" {{#checked}}checked="checked"{{/checked}} {{#disabled}}disabled="disabled"{{/disabled}}/>
+            <div class="data">
+                <label for="filter-{{id_rand}}-{{id}}">{{title}}</label>
+                {{#list}}<a href="#change" class="button member" data-filter="{{id}}" data-list="{{type}}"><span class="icon arrow list"></span></a>{{/list}}
+            </div>
+        </li>
+        {{/filters}}
+        <li class="search hidden">
+            <input type="text" placeholder="Search" value="{{search}}"/>
+        </li>
+    </ul>
+</div>
+<div class="ui-dialog-invisible hidden owner atowner">
+    <select class="control ui-icon-enabled owner atowner">
+        {{#members}}
+        <option value="{{id}}" style="background-image: url({{avatar}})" {{#selected}}selected="selected"{{/selected}}>{{nickname}}</option>
+        {{/members}}
+    </select>
+</div>
+{{/show}}

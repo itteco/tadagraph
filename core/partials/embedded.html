@@ -1,0 +1,59 @@
+{{#has_items}}
+    <div class="attachments">
+        {{#items}}
+            {{#is_video}}
+                <div class="attachment video">
+                    <div class="attach-title">
+                        <a target="_blank" href="{{pageUrl}}">
+                            <img class="favicon" src="{{favicon_url}}">
+                            {{title}}
+                        </a>
+                    </div>
+                    <div class="attach-image">
+                        <a href="{{pageUrl}}">
+                            <span class="icon video-play"></span>
+                            <img src="{{image_url}}">
+                        </a>
+                    </div>
+                    <div class="attach-html">
+                        {{{html}}}
+                    </div>
+                    {{#description}}
+                    <div class="attach-description">
+                        {{{description}}}
+                    </div>
+                    {{/description}}
+                </div>
+            {{/is_video}}
+            
+            {{^is_video}}
+                <div class="attachment link {{attachmentClass}}">
+                    {{^is_image}}
+                    <div class="attach-title">
+                        <a target="_blank" href="{{pageUrl}}">
+                            <img class="favicon" src="{{favicon_url}}">
+                            {{title}}
+                        </a>
+                    </div>
+                    {{/is_image}}
+                    {{#image_url}}
+                        <div class="attach-image">
+                            {{#is_image}}
+                                <a rel="attachment-group-{{refDocId}}" target="_blank" href="{{image_url}}" class="sys-thumb"><img src="{{trumb_url}}"/></a>
+                            {{/is_image}}
+                            {{^is_image}}
+                                <a target="_blank" href="{{pageUrl}}"><img src="{{image_url}}"/></a>
+                            {{/is_image}}
+                        </div>
+                    {{/image_url}}
+                    {{#description}}
+                    <div class="attach-description">
+                        {{{description}}}
+                    </div>
+                    {{/description}}
+                </div>
+            {{/is_video}}
+        {{/items}}
+    </div>
+{{/has_items}}
+

@@ -1,0 +1,6 @@
+{
+    ".stream-context a.button" : {"click" : ["hideContextMenu"]},
+    ".stream-context a.meta-add" : {"click" : ["addMeta"]},
+    ".stream-context a.edit" : {"click" : ["editItem"]},
+    ".stream-context a.delete" : {"click" : ["deleteItem"]}
+}

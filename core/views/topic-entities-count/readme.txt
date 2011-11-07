@@ -1,0 +1,1 @@
+This will be used for count of entities in topic maybe later.

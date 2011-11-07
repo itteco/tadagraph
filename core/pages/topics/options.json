@@ -1,0 +1,15 @@
+{
+    "widget": "pageMain2", 
+    "app": "core",
+    "widgets": [
+        {
+            "widget": "topics-list",
+            "container": ".container-main-column"
+        },
+        {
+            "widget": "bigLoader",
+            "app": "core",
+            "container": ".container-main-column"
+        }
+    ]
+}

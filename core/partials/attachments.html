@@ -1,0 +1,36 @@
+{{#hasSomething}}
+    <div class="attachments">
+        {{#hasImages}}
+            <div class="attachment image">
+                <div class="wrapper">
+                    {{#limitedImages}}
+                        <div class="attach-image">
+                            <a rel="attachment-group-{{refDocId}}" href="{{uri}}" class="sys-thumb">
+                                <img src="{{trumb_uri}}" alt="{{name}}" title="{{name}}">
+                            </a>
+                        </div>
+                    {{/limitedImages}}
+                </div>
+                {{#manyImages}}
+                <div class="more">
+                    {{#moreImages}}
+                        <a href="{{docUrl}}">+ {{moreImagesCount}} more image{{^moreImagesIsOne}}s{{/moreImagesIsOne}}</a>
+                        <span>|</span>
+                    {{/moreImages}}
+                    <a class="all" href="{{imagesUrl}}" target="_blank">View all</a>
+                </div>
+                {{/manyImages}}
+            </div>
+        {{/hasImages}}
+    
+        {{#hasFiles}}
+            <div class="attachment file">
+                <ul class="filelist">
+                    {{#files}}
+                    <li><a class="file {{type}}" href="{{uri}}" target="_new"><span class="icon file {{type}}"></span>{{name}}</a></li>
+                    {{/files}}
+                </ul>
+            </div>
+        {{/hasFiles}}
+    </div>
+{{/hasSomething}}

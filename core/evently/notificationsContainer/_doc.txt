@@ -1,0 +1,9 @@
+Contains "notificationsByDB" widget. Connects it with proper events.
+
+Overall widget hierarchy:
+
+- notificationsAll
+  - notificationsContainer
+    - notificationsByDB
+  - notificationsContainer
+    - notificationsByDB

@@ -1,0 +1,11 @@
+{
+    "orderIndex": 990,
+    "id": "topics",
+    "title": "Topics", 
+    "filters": {
+        "hide-unstarred": false,
+        "hide-archived": true
+    },
+    "visible": false,
+    "topics-recent": false
+}

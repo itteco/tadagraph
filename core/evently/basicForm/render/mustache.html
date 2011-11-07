@@ -1,0 +1,55 @@
+<div class="status-form flow {{#contact}}contact{{/contact}}">
+    <div class="border">
+
+        <div class="col heading">
+            <img src="{{avatar}}" width="48" height="48" class="avatar" alt="" title="" onerror="defaultAvatar(event)"/>
+            <div class="data">
+                <span class="member overflow" title="{{nickname}}">{{nickname}}</span>
+            </div>
+        </div>
+
+        <div class="col content">
+
+            <div class="input-border">
+                <textarea class="input-status"
+                          placeholder="{{#contact}}Type your private message{{/contact}}{{^contact}}markup: []=topic, #=action, @=mention{{/contact}}"></textarea>
+            </div>
+
+            <div class="options">
+                <div class="group left">
+                    <div class="ui-uploader ui-uploader-button">
+                        <div class="file-uploader"></div>
+                    </div>
+                </div>
+                <div class="group right">
+                    {{#contact}}
+                        <div class="radio-group sys-message-type">
+                            <label class="selected"><input type="radio" checked="" name="tada-type" value=""> private note</label>
+                            <label class=""><input type="radio" name="tada-type" value="#dm "> direct message</label>
+                        </div>
+                    {{/contact}}
+                    {{#showSpaces}}
+                    <div class="wrapper-spacebox">
+                        <select class="spacebox">
+                            <option class="non-selected" disabled="disabled" value="">select space...</option>
+                            {{#spaces}}
+                            <option class="{{type}}" value="{{id}}">{{name}}</option>
+                            {{/spaces}}
+                        </select>
+                    </div>
+                    {{/showSpaces}}
+                    <a href="#" class="button-submit button-tada">TADA!</a>
+                </div>
+            </div>
+
+            <div class="ui-uploader ui-uploader-list">
+                <div class="file-uploader-list"></div>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+<div class="attachments-manager hidden"></div>

@@ -1,0 +1,43 @@
+{{#has_items}}
+<div class="embed-list">
+
+    {{#articles}}
+        <div class="gazette">
+            <div class="item">
+                <div class="divider"></div>
+                <h3 class="post-title"><a href="{{pageUrl}}">{{title}}</a></h3>
+                <div class="content">
+                    {{#image_url}}
+                    <div class="thumbnail align-left"><div class="crop"><a href="{{pageUrl}}"><img src="{{image_url}}"></a></div></div>
+                    {{/image_url}}
+                    <p>
+                        <a class="source" href="{{pageUrl}}"><img class="favicon" src="{{favicon_url}}"> {{provider_name}}</a> <span class="separator">&#8226;</span>
+                        {{{content}}}
+                    </p>
+                    
+                </div>
+            </div>
+        </div>
+    {{/articles}}
+
+    {{#embeds}}
+        <div class="embed video full">
+            <div class="thumb">
+                {{{preview_html}}}
+            </div>
+            <div class="content">
+                <div class="head">
+                    <a href="{{pageUrl}}" class="title">{{title}}</a>
+                    <span class="source">
+                        <a href="{{pageUrl}}"><img src="{{favicon_url}}" class="favicon"> {{provider_name}}</a>
+                    </span>
+                </div>
+                <div class="text">
+                    {{{content}}}
+                </div>
+            </div>
+        </div>
+    {{/embeds}}
+    
+</div>
+{{/has_items}}

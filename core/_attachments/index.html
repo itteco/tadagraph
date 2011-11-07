@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tadagraph / Home</title>
+
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+<script type="text/javascript" src="js/es5-shim.min.js"></script>
+<script type="text/javascript" src="js/x.js"></script>
+<script type="text/javascript" src="js/infra.js"></script>
+<script type="text/javascript" src="js/api.js"></script>
+<script type="text/javascript" src="js/api-default.js"></script>
+<script type="text/javascript">
+// <![CDATA[
+	var VER = 8;
+	var DEBUG = (/debug=true/.test(location.href));
+	var NOLOADER = (/noloader=true/.test(location.href));
+	
+	$(window).load(function() {
+	    setTimeout(function() {
+	        load_scripts([
+	            'js/loader.js'
+	        ]);
+	    }, 20);
+	});
+//]]>
+</script>
+</head>
+<body>
+
+<!-- container -->
+<div class="container">
+
+    <!-- body -->
+    <div id="pages">
+    </div>
+    <!-- /body -->
+
+
+</div>
+<!-- /container -->
+
+<div id="notifier-popup" class="hidden"></div>
+
+<div class="notification" id="notifierPopup"></div>
+<div id="notifications_count_widget" class="hidden"></div>
+
+<div id="id_account_widget" style="display: none;"></div>
+<div id="id_topics" style="display: none;"></div>
+
+<div id="id_inline_form" style="display: none;"></div>
+<div id="id_reply_form" style="display: none;"></div>
+
+<div id="id_follow_manager"></div>
+<div id="id_changes_manager" style="display: none;"></div>
+<div id="id_invite_peers" style="display: none"></div>
+<div id="id_tada_menu"></div>
+<div id="id_tada_edit"></div>
+<div id="id_hints"></div>
+<div id="id_thread_preview"></div>
+<div id="id_publish_dialog"></div>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+<div class="page-context topics">
+    <a href="#" class="button-add topic" onclick="$(this).trigger('addTopicClick', [this]); return false">+ Start new</a>
+</div>
+
+<ul class="list topic">
+    {{#topics}}
+    <li class="item hover {{#offline}} offline {{/offline}}  {{#isNew}} new-item {{/isNew}} {{#archived}} archived {{/archived}} {{#hidden}}hidden{{/hidden}}" data-id="{{id}}" {{#hidden}}style="display:none"{{/hidden}}>
+        <div class="col content">
+            <a href="{{url}}">{{title}}</a>
+        </div>
+        <div class="col meta">
+            <ul>
+                {{#links}}
+                <li><a href="{{url}}">{{title}}</a></li>
+                {{/links}}
+            </ul>
+        </div>
+        <a href="#" class="button star" title="Star" data-follow-id="{{id}}"><span class="icons star"></span></a>
+    </li>
+    {{/topics}}
+</ul>
+
+<div class="item-context topics hidden">
+    <ul>
+        <li><a href="#" class="button archive" title="Delete" data-event="item-archive"><span class="icons archive"></span></a></li>
+        <li><a href="#" class="button edit" title="Edit" data-event="item-edit"><span class="icons edit"></span></a></li>
+    </ul>
+</div>
+
+<div class="editor inline topics hidden">
+    <div class="table">
+        <div class="tr">
+            <div class="td">
+                <div class="wrapper">
+                    <input type="text" class="input single-line" value="" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="table">
+        <div class="tr">
+            <div class="td tags">
+                {{#topicTags}}
+                <label><input type="checkbox" value="{{tag}}"/>{{title}}</label>
+                {{/topicTags}}
+            </div>
+            <div class="td"></div>
+            <div class="td archived">
+                <label class="checkbox">
+                    <input type="checkbox" /> Archived
+                </label>
+            </div>
+            <div class="td buttons">
+                <ul class="editor-buttons">
+                    <li><a href="#cancel" class="editor-cancel">Cancel</a></li>
+                    <li><a href="#save" class="editor-save"><span>Save</span></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tip hidden">
+<p>Topics is how we group the conversations by subject. To open a topic, you just include its name in square brackets in the message.</p>
+<p>For example, [1st things to do] would create a topic with such name, if it is your first message into this topic, or would link the message to this topic, if topic is already there.</p>
+<p>Each topic can have multiple views, as it is defined by the semantic tag. For example, #todo is for topics of type "Todo List". Subject of a forum discussion and a name of the Wiki articles are also topics.</p>
+<p>If you need to add views to the topic - you just add corresponding tag. You can do it from the Topic details page, right in the heading of the topic. By default, each Topic only gets a timeline view.</p>
+<p>Let us know at <a href="mailto:support@teamfm.com">support@teamfm.com</a> if you're lost in translations.</p> 
+</div>

@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>attachment</title>
+
+<style>
+    body {
+        background: #f8f8f8;
+        margin: 0;
+        padding: 30px;
+        font-size: 12px;
+        font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+    }
+    ul, li, h1 {
+        margin: 0;
+        padding: 0;
+        list-style: none
+    }
+    .attachment h1 {
+        color: #8c8c8c;
+        padding-bottom: 8px;
+        font-weight: normal;
+        font-size: 13px;
+    }
+    .attachment .item {
+        margin-bottom: 40px;
+    }
+    img {
+        -webkit-box-shadow: rgba(0,0,0,.3) 0px 1px 3px;
+        -moz-box-shadow: rgba(0,0,0,.3) 0px 1px 3px;
+        box-shadow: rgba(0,0,0,.3) 0px 1px 3px;
+        display: block;
+    }
+</style>
+
+</head>
+<body class="attachment">
+
+<ul class="attachments">
+    
+    {{#images}}
+      <li class="item">
+          <h1>{{name}}</h1>
+          <img src="../../../../{{_id}}/{{name}}" />
+      </li>
+    {{/images}}
+
+</ul>
+
+</body>
+</html>

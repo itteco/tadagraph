@@ -1,0 +1,27 @@
+{
+    "widget": "pageMain3", 
+    "app": "core",
+    "widgets": [
+        {
+            "widget": "docDetails",
+            "app": "core",
+            "container": ".container-main-column"
+        },
+        {
+            "widget": "docsTree",
+            "app": "core",
+            "container": ".container-main-column"
+        },
+        {
+            "widget": "bigLoader",
+            "app": "core",
+            "container": ".container-main-column"
+        },
+        {
+            "widget": "docMeta",
+            "app": "core",
+            "container": ".sidebar",
+            "order": 500
+        }
+    ]
+}

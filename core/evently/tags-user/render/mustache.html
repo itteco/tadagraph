@@ -1,0 +1,17 @@
+<div class="twidget-body">
+    <div class="tadatip">
+        <div class="wrapper">
+            No worries: <strong>to unblock</strong>, simply add this tag to any of the messages yourself
+        </div>
+    </div>
+    {{#show}}
+    <ul>
+        {{#tags}}
+        <li class="item" data-tag="{{tag}}">
+            <span class="icons tag-mute" title="Mute tag"></span>
+            <span class="wrap"><a href="{{url}}" class="tag {{#selected}}selected{{/selected}}">#{{tag}}</a></span>
+        </li>
+        {{/tags}}
+    </ul>
+    {{/show}}
+</div>
