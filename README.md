@@ -36,9 +36,9 @@ Demo
 ----
 You can check out Tadagraph application here: [http://opensource.team.fm](http://opensource.team.fm).
 
-
 Other resources
 ---------------
+* [Team.FM](https://team.fm)
 * [CouchDB](http://couchdb.apache.org)
 * [CouchApp](http://www.couchapp.org)
 * [Evently](http://couchapp.org/page/evently)
