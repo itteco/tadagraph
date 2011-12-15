@@ -17,4 +17,6 @@ function(page, match, widgets, filter) {
     $('.sys-page-header', page).trigger('setOptions', [{
         title: (desc ? desc.title + ' ' : '') + 'Topics'
     }]);
+
+    $(document.body).trigger('view-tags', [{}]);
 }

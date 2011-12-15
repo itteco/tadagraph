@@ -1,9 +1,9 @@
-function(e, notification) {
+function(e, status) {
     var $this = $(this);
     var $$this = $$(this);
     var $item = $('li:first-child', $this).first();
     
-    var $existItem = $('li.item[data-id="' + notification._id + '"]', this);
+    var $existItem = $('li.item[data-id="' + status._id + '"]', this);
     if ($existItem.size() > 1) {
         var $oldItem = $($existItem[1]);
         var editor = $$($oldItem).editor;
@@ -27,7 +27,7 @@ function(e, notification) {
         $this.find('.fade').hide();
     });
     
-    if (notification._rev) {        
+    if (status._rev) {        
         $existItem.each(function() {
             var $this = $(this),
             $loader = $this.find('.editor-loader');        
@@ -52,13 +52,12 @@ function(e, notification) {
     if (showStarred && !sinceStarred) $item.hide();
     if (!showStarred && sinceStarred) $item.hide();
     
-    // Only if item is new!
-    if ($existItem.filter(':not(.offline)').length <= 1) {
-        API.queueNewItems($item);
-    }
-    
     if (API.videoHints && $this.is(':visible')) {
         API.videoHints.hide();
+    }
+    
+    if ($item.is('.new-item')) {
+        $item.css('background-color', '#f5f9fb');
     }
     
     APPS.core.require('vendor/tadagraph/lib/oembed').wrap($item);

@@ -1,10 +1,10 @@
-function(e, notifications) {
-  notifications.forEach(function(notification) {    
+function(e, statuses) {
+  statuses.forEach(function(status) {    
     $('#notifierPopup').trigger('showNotifications', [[{
-      id: notification._id,
+      id: status._id,
       type: 'status',
-      data: notification,
-      ref: notification
+      data: status,
+      ref: status
     }]]);
   });
 }

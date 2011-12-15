@@ -6,7 +6,7 @@
                     <div class="attach-title">
                         <a target="_blank" href="{{pageUrl}}">
                             <img class="favicon" src="{{favicon_url}}">
-                            {{title}}
+                            {{#title}}{{title}}{{/title}}{{^title}}{{pageUrl}}{{/title}}
                         </a>
                     </div>
                     <div class="attach-image">
@@ -32,7 +32,7 @@
                     <div class="attach-title">
                         <a target="_blank" href="{{pageUrl}}">
                             <img class="favicon" src="{{favicon_url}}">
-                            {{title}}
+                            {{#title}}{{title}}{{/title}}{{^title}}{{pageUrl}}{{/title}}
                         </a>
                     </div>
                     {{/is_image}}
@@ -42,7 +42,7 @@
                                 <a rel="attachment-group-{{refDocId}}" target="_blank" href="{{image_url}}" class="sys-thumb"><img src="{{trumb_url}}"/></a>
                             {{/is_image}}
                             {{^is_image}}
-                                <a target="_blank" href="{{pageUrl}}"><img src="{{image_url}}"/></a>
+                                <a target="_blank" href="{{pageUrl}}"><img src="{{trumb_url}}"/></a>
                             {{/is_image}}
                         </div>
                     {{/image_url}}

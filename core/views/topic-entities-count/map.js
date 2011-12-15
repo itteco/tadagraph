@@ -1,5 +1,5 @@
-function(doc) {
-    if (doc.type) {
+(function(doc) {
+    if (doc.type == 'status') {
         
         var topicsDict = {};
         if (doc.topic) {
@@ -26,4 +26,4 @@ function(doc) {
                 emit([topic, tag], 1);
         }
     }
-}
+})

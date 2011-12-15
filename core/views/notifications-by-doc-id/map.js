@@ -1,5 +1,5 @@
-function(doc) {
-    if (doc.type == 'notification') {
-        emit(doc.ref._id, {rev: doc._rev});
+(function(doc) {
+    if (doc.type == 'status') {
+        emit(doc._id, {rev: doc._rev});
     }
-}
+})

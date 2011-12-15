@@ -1,5 +1,5 @@
-function (doc) {
-    if (doc.tags && (doc.topic || doc.topics)) {
+(function (doc) {
+    if (doc.type == 'status' && doc.tags && (doc.topic || doc.topics)) {
         var topicsDict = {};
         if (doc.topic) {
             topicsDict[doc.topic._id] = true;
@@ -20,6 +20,6 @@ function (doc) {
         
         for (var topic in topicsDict)
             for (var tag in tagsDict)
-                emit([doc.db.type, doc.db.name, topic, tag], (new Date(doc.created_at)).getTime());
+                emit([topic, tag], (new Date(doc.created_at)).getTime());
     }
-}
+})

@@ -1,7 +1,7 @@
 function(e, $item, doc) {
     var $$this = $$(this);
     
-    $$this.parentDoc = doc.ref || doc;
+    $$this.parentDoc = doc;
     
     $$this.openDialog($item);
     

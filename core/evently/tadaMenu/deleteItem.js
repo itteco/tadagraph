@@ -9,10 +9,6 @@ function(e, $item) {
     
     var doc = API.cachedDocs[id];
     
-    if (doc.type == "notification") {
-        doc = doc.ref;
-    }
-    
     var $loader = $item.find('.editor-loader');
     if ($loader.length == 0) {
         $item.append('<div class="editor-loader"></div>');
@@ -28,15 +24,11 @@ function(e, $item) {
         include_docs: true,
         success: function(data) {
             var origDoc;
-            var notifyDoc;
             var hasChildren = false;
             data.rows.forEach(function(row) {
                 var d = row.doc;
                 if (d._id == doc._id) {
-                    origDoc = doc;
-                
-                } else if (d.type && d.type == "notification") {
-                    notifyDoc = d;
+                    origDoc = d;
                 
                 } else
                     hasChildren = true;
@@ -48,20 +40,9 @@ function(e, $item) {
                 alert("Can't delete message which got replies to it. Please, try editing instead.");
 
             } else {
-                DB.saveDoc(notifyDoc, { // TODO: workaround for viewed_at
+                DB.saveDoc({_id: origDoc._id, _rev: origDoc._rev, _deleted: true}, {
                     success: function() {
-                        var docs = [];
-                        if (origDoc) {
-                            origDoc._deleted = true;
-                            docs.push(origDoc)
-                        }
-                        notifyDoc._deleted = true;
-                        docs.push(notifyDoc);
-                        DB.bulkSave(docs, {
-                            success: function() {
-                                $item.fadeOut('fast');
-                            }
-                        });
+                        $item.fadeOut('fast');
                     }
                 });
             }

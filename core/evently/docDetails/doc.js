@@ -26,8 +26,8 @@ function(e, doc, isUpdate) {
     }
     
     if (!sameDoc) {
-        unregisterChangesListener("document details");
-        registerChangesListener(API.filterDB({parent: doc}), function(docs) {
+        API.unregisterChangesListener("document details");
+        API.registerChangesListener(API.filterDB({parent: doc}), function(docs) {
             if (!($this.is(":visible")))
                 return;
             docs.forEach(function(d) {

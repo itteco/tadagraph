@@ -5,6 +5,7 @@ function (e, doc, options) {
     var $$this = $$(this);
     
     $$this.doc = doc;
+    $$this.currentDB = doc.db;
     
     $$this.options = options = options || {};
     
@@ -13,5 +14,7 @@ function (e, doc, options) {
     if (!($$(document).showdown_converter))
         $$(document).showdown_converter = new Showdown.converter();
     
-    $this.trigger("render-" + view);
+    API.filterTopics(doc, function(_error, topics) {
+        $this.trigger("render-" + view, [topics]);
+    });
 }

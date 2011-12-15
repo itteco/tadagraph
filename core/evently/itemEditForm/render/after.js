@@ -1,10 +1,11 @@
 function() {
+    var _this = this;
     var $this = $(this);
     var $$this = $$(this);
     
     var $attachmentManager = $(".attachments-manager", this);
     $attachmentManager.evently("attachmentsManager", APPS.core, [this, $("#editor-tada-uploader", this)[0], $("#editor-tada-uploader-list", this)[0]]);
-    $.evently.connect($this, $attachmentManager, ["formClosed"]);
+    $.evently.connect($this, $attachmentManager, ["formClosed", "spaceChanged"]);
     
     $('[placeholder]', this).placeholder();
     $('textarea', this).elastic();
@@ -137,6 +138,8 @@ function() {
             $$this.currentItem.show();
             $$this.currentItem = null;
         }
+        
+        $this.trigger("formClosed", [_this]);
         
         $formEdit.hide();
     }

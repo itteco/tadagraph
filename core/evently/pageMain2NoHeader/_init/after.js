@@ -11,13 +11,9 @@ function(e, match) {
     
     $.evently.connect($body, $spaceMenu, ["showLoading", "hideLoading"]);
     
-    $.evently.connect($("#notifications_count_widget"), $(".topics"), ["setNotificationsCount"]);
-    
     API.connectVisible($body, $tagsSystem, ["setFilter"]);
     API.connectVisible($body, $tagsUser, ["setFilter"]);
     $.evently.connect($body, $topicsList, ["setFilter"]);
-    
-    $.evently.connect($("#id_topics"), $topicsList, ["topicsLoaded"]);
     
     $.evently.connect($body, $(".twidget.filter", this), ["profilesLoaded"]);
     

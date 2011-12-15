@@ -10,7 +10,7 @@ function(e, $item) {
     
     var doc = API.cachedDocs[id];
     var DB = API.filterDB({parent: doc});
-    DB.openDoc(doc.ref._id, {
+    DB.openDoc(doc._id, {
         success: function(doc) {
             var tagsDesc = API.tags.desc(API.filterPrepare({parent: doc}));
             doc.tags = API.tags.remove("public", doc.tags || [], tagsDesc, function(tag, remove) {

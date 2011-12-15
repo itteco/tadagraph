@@ -1,3 +1,3 @@
-function(keys, values) {
+(function(keys, values) {
     return Math.max.apply(Math, values);
-}
+})

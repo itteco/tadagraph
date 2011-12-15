@@ -17,7 +17,7 @@ function(e, doc, options) {
     var status_text = suInput.val();
     
     function getPrefix(replyTo, removing) {
-        var intId = replyTo.intId || (replyTo.ref && replyTo.ref.intId);
+        var intId = replyTo.intId;
         if (intId) {
             if (removing || !options.doNotShowReceiver) {
                 return "#" + intId + " ";
@@ -27,7 +27,7 @@ function(e, doc, options) {
         } else {
             if (removing || (!options.doNotShowReceiver && replyTo.created_by.id != API.username())) {
                 var prefix = "@" + replyTo.created_by.nickname + " ";
-                var origDoc = replyTo.type == "notification"? replyTo.ref: replyTo;
+                var origDoc = replyTo;
                 if (origDoc.db.type == "person" && origDoc.tags && origDoc.tags.indexOf("dm") >= 0) {
                     prefix = "#dm " + prefix;
                 }

@@ -112,9 +112,6 @@ function initFlowStatusForm() {
 }
     
 function initInputSuggest() {
-    var $$topics = $$("#id_topics");
-    var $$tags = $$("#id_tags");
-
     /*
     *****************
       Autocomplete.
@@ -130,47 +127,42 @@ function initInputSuggest() {
             prefix:     '[',
             suffix:     '] ',
             getData: function(callback) {
+                var that = this;
                 var currentDB = $$this.currentDB;
-                if (currentDB.name && currentDB.type) {
-                    var topicsByProject = $$topics.topicsByDB[currentDB.type] || {};
-                    if (topicsByProject[currentDB.name]) {
-                        callback(topicsByProject[currentDB.name].filter(function(topic) {
-                            return !topic.archived;
-                        }).map(function(topic) {
-                            return topic.title
-                        }));
-                    } else {
-                        callback([]);
-                    }
-                } else {
+                var filter = {db: currentDB};
+                var hasSpace = !(currentDB.name && currentDB.type);
+                
+                API.filterTopics(filter, function(error, topics) {
                     var result = [];
-                    var storedTopics = $$topics.storedTopics;
-                    for(var i in storedTopics) {
-                        var topic = storedTopics[i];
+                    that.items = topics;
+                    $.forIn(topics, function(topicId, topic) {
                         if (!topic.archived) {
-                            result.push(topic.title + " (in " + topic.db.name + ")");
+                            if (hasSpace)
+                                result.push(topic.title + " (in " + topic.db.name + ")");
+                            
+                            else
+                                result.push(topic.title);
                         }
-                    }
+                    });
+                    result.sort();
                     callback(result);
-                }
+                });
             },
             prepareValue: function(value) {
                 // TODO: here is a bug. Inserts topic like [hoho123 (in cosmos)]
+                var items = this.items;
+                
                 var currentDB = $$this.currentDB;
-                if (!(currentDB.name && currentDB.type)) {
-                    var storedTopics = $$topics.storedTopics;
-                    for (var id in storedTopics) {
-                        if (storedTopics.hasOwnProperty(id)) {
-                            var topic = storedTopics[id];
-                            var title = topic.title + " (in " + topic.db.name + ")";
-                            if (value == title) {
-                                $spacebox.selectmenu("value", topic.db.type + "::" + topic.db.name);
-                                return topic.title;
-                            }
+                var hasSpace = !(currentDB.name && currentDB.type);
+                if (hasSpace) {
+                    $.forIn(items, function(topicId, topic) {
+                        if (value == topic.title + " (in " + topic.db.name + ")") {
+                            $spacebox.selectmenu("value", topic.db.type + "::" + topic.db.name);
+                            value = topic.title;
                         }
-                    }
+                    });
                 }
-
+                
                 return value;
             }
         },
@@ -184,7 +176,7 @@ function initInputSuggest() {
                     var space = API.filterSpace({db: { type: currentDB.type, name: currentDB.name}}); // TODO: hide db
                     if (space) {
                         var result = [];
-                        space.allMembers.forEach(function(userid) {
+                        space._allMembers.forEach(function(userid) {
                             var profile = API.profile(userid);
                             if (profile)
                                 result.push(profile.nickname);
@@ -212,18 +204,23 @@ function initInputSuggest() {
                 }
                 
                 API.filterTags(filter, function(error, items) {
-                    var hasSpace = items.length && items[0].space && true;
-                    items.forEach(function(item) {
-                        if (!(item.tag in predefined)) {
-                            if (hasSpace) {
-                                list.push(item.tag + " (in " + item.space.name + ")");
-                                
-                            } else {
-                                list.push(item.tag);
+                    if (error) {
+                        console.error(error);
+                        
+                    } else {
+                        var hasSpace = items.length && items[0].space && true;
+                        items.forEach(function(item) {
+                            if (!(item.tag in predefined)) {
+                                if (hasSpace) {
+                                    list.push(item.tag + " (in " + item.space.name + ")");
+
+                                } else {
+                                    list.push(item.tag);
+                                }
                             }
-                        }
-                    });
-                    that.items = items;
+                        });
+                        that.items = items;
+                    }
                 
                     list.sort();
                     callback(list);

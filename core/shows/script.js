@@ -1,4 +1,4 @@
-function(doc, req) {
+(function(doc, req) {
 
   function out(str) {
     return {
@@ -44,5 +44,4 @@ function(doc, req) {
   
   return out(lines.join('\r\n'));
 
-}
-
+})

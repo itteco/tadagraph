@@ -1,7 +1,5 @@
 function(e, options) {
     var doc = API.cachedDocs[options.id];
-    if (doc.ref)
-        doc = doc.ref;
     
     var root = doc;
     while(root.parent) {
@@ -32,7 +30,7 @@ function(e, options) {
                 return 0;
             });
             
-            html = "";
+            var html = "";
             docs.forEach(function(doc) {
                 var trimmedBody = trimMeta(doc.body);
                 if (trimmedBody.length == 0) {
@@ -43,7 +41,7 @@ function(e, options) {
                 }
                 
                 html += '<li class="item">';
-                html += '<img src="' + API.avatarUrl(doc.created_by.id) + '" class="avatar" alt="" title="' + doc.created_by.nickname + '" onerror="defaultAvatar(event)"/>';
+                html += '<img src="' + API.avatarUrl(doc.created_by.id) + '" class="avatar" alt="" data-id="' + doc.created_by.id + '" title="' + doc.created_by.nickname + '" onerror="defaultAvatar(event)"/>';
                 html += '<div class="text">';
                 html += trimmedBody;
                 html += '</div></li>';

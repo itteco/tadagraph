@@ -28,7 +28,7 @@ function() {
         $loader.show();
     }
     
-    $('.avatar[data-owner]:not(.account-of-myself)').live('click', function(event) {
+    $('.avatar[data-id]:not(.account-of-myself)').live('click', function(event) {
         $item = $(this);
         info($item);
 
@@ -47,7 +47,7 @@ function() {
     
     function info($item) {
         
-        var member = $item.data('owner');
+        var member = $item.data('id');
         
         $info.find('.avatar').attr('src', API.avatarUrl(member, 'a128'));
         
@@ -130,7 +130,7 @@ function() {
         email = email && email.value || email;
 
         $info.find('.title').text(fname || info.name);
-        $info.find('.info').html(intro);
+        $info.find('.info').html(intro || '');
 
         if (email) {
             $info.find('.email').show().html('<a href="mailto:' + email + '">' + email + '</a>');

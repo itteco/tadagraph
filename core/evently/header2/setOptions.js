@@ -56,13 +56,13 @@ function(e, options) {
         
         reloadEntitiesCount();
         
-        unregisterChangesListener("new topic entity");
-        registerChangesListener(DB, function(docs) {
-            if (!($self.is(":visible")))
+        API.unregisterChangesListener("new topic entity");
+        API.registerChangesListener(DB, function(docs) {
+            if (!$self.is(":visible"))
                 return;
             var possibleChange = false;
             docs.forEach(function(doc) {
-                if (doc._deleted || (doc.type != "notification" && doc.db.name == DB.name && doc.db.type == DB.type)) {
+                if (doc._deleted || (doc.db.name == DB.name && doc.db.type == DB.type)) {
                     possibleChange = true;
                 }
             });
@@ -78,7 +78,9 @@ function(e, options) {
         
         $(".editor.inline.tags .td.tags", this).html(html);
         
-        $self.trigger("renderTopics");
+        API.filterTopics(options.filter, function(_error, topics) {
+            $self.trigger('renderTopics', [topics]);
+        });
     } else {
         $('.sys-topic', this).hide();
         $('.sys-simple', this).show();

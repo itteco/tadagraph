@@ -4,8 +4,7 @@ var totalWaiting = 0,
 totalLoaded = 0,
 totalDdocs = 0;
 
-function update_progress() {
-}
+function update_progress() {}
 
 function load_scripts(scripts, callback, defer) {
     var waiting = 0;
@@ -25,7 +24,7 @@ function load_scripts(scripts, callback, defer) {
 
     function _callback() {
         stopLoading();
-        Object.invoke(window,'update_progress');
+        Object.invoke(window, 'update_progress');
 
         if (callback && waiting === 0) return setTimeout(callback, 13);
     }
@@ -47,9 +46,10 @@ function load_scripts(scripts, callback, defer) {
             return;
         }
 
-        if (s.match(/\.js$/) || /maps\.google\.com/.test(s)) {
+        var isGoogle = s.match(/google\.com/);
+        if (s.match(/\.js$/) || isGoogle) {
             var script = document.createElement('script');
-            script.src = s;
+            script.src = isGoogle? s: (s + '?v=' + VER);
             script.async = true;
             if (callback) {
                 startLoading();
@@ -59,26 +59,28 @@ function load_scripts(scripts, callback, defer) {
                 document.body.appendChild(script);
             }, 0);
             
-        } else if (s.match("\.css$")) {
+        } else if (s.match(/\.css$/)) {
             var link = document.createElement('link');
-            link.href = s;
+            link.href = s + '?v=' + VER;
             link.rel = 'stylesheet';
             link.type = 'text/css';
 
             $('head')[0].appendChild(link);
         }
     });
-};
+}
 
 var BENCHMARK_ENABLED = false;
 var benchmarks = {};
 var benchmarksIdx = {};
+
 function startBenchmark(id) {
     if (BENCHMARK_ENABLED) {
         benchmarks[id] = new Date().getTime();
         benchmarksIdx[id] = 1;
     }
 }
+
 function measureBenchmark(id) {
     if (BENCHMARK_ENABLED) {
         if (!(id in benchmarks))
@@ -88,4 +90,3 @@ function measureBenchmark(id) {
         benchmarksIdx[id] = benchmarksIdx[id] + 1;
     }
 }
-

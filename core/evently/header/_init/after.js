@@ -133,15 +133,17 @@ function() {
             $cHeader.hide().after($fTopic);
             $fTopic.show();
 
-            var editTopic = $$("#id_topics").storedTopics[getFilter().topicId];
-            $fTopic.find('input[type=text]:first').val(editTopic.title).focus();
+            API.filterTopics(getFilter(), function(_error, topics) {
+                var editTopic = topics[getFilter().topicId];
+                $fTopic.find('input[type=text]:first').val(editTopic.title).focus();
 
-            var archived = $fTopic.find('input[type=checkbox]:first');
-            if (editTopic.archived) {
-                archived.attr("checked", "checked");
-            } else {
-                archived.removeAttr("checked");
-            }
+                var archived = $fTopic.find('input[type=checkbox]:first');
+                if (editTopic.archived) {
+                    archived.attr("checked", "checked");
+                } else {
+                    archived.removeAttr("checked");
+                }
+            });
 
             return false;
         }
@@ -175,89 +177,92 @@ function() {
         }
     });
     function topicEditSave() {
-        var editTopic = $$("#id_topics").storedTopics[getFilter().topicId];
-        var body = $fTopic.find('input[type=text]:first').val();
-        if (!body || !editTopic) {
-            return
-        }
-        
-        var archived = $fTopic.find('input[type=checkbox]:first').is(":checked");
-        
-        var DB = API.filterDB(getFilter());
+        API.filterTopics(getFilter(), function(_error, topics) {
+            var editTopic = topics[getFilter().topicId];
+            var body = $fTopic.find('input[type=text]:first').val();
+            if (!body || !editTopic) {
+                return
+            }
 
-        topicEditClose();
+            var archived = $fTopic.find('input[type=checkbox]:first').is(":checked");
 
-        var $item = $cHeader;
-        var $loader = $item.find('.editor-loader');
-        $cHeader.find('h1 .text.wrapper').text(body);
+            var DB = API.filterDB(getFilter());
 
-        $item.addClass('state-progress');
-        $loader.show();
-        
-        topic = $.extend(true, {}, editTopic);
-        
-        topic.title = body;
-        topic.archived = archived;
-        
-        topic.tags = API.tags.add("todo", topic.tags, API.tags.desc(getFilter()));
-        
-        DB.saveDoc(topic, {
-            success: function() {
-                // Update topic in all todos. Need to mark archived.
-                DB.view("todo/todos-by-topic", {
-                    startkey: topic._id,
-                    endkey: topic._id,
-                    success: function(data) {
-                        var todos = [];
-                        data.rows.forEach(function(row) {
-                            var doc = row.value;
-                            
-                            // Move .topic
-                            if (doc.topic) {
-                                var idx = findTopic(doc.topics, doc.topic);
-                                if (idx == -1) {
-                                    doc.topics.push(doc.topic);
+            topicEditClose();
+
+            var $item = $cHeader;
+            var $loader = $item.find('.editor-loader');
+            $cHeader.find('h1 .text.wrapper').text(body);
+
+            $item.addClass('state-progress');
+            $loader.show();
+
+            var topic = $.extend(true, {}, editTopic);
+
+            topic.title = body;
+            topic.archived = archived;
+
+            topic.tags = API.tags.add("todo", topic.tags, API.tags.desc(getFilter()));
+
+            DB.saveDoc(topic, {
+                success: function() {
+                    // Update topic in all todos. Need to mark archived.
+                    DB.view("todo/todos-by-topic", {
+                        startkey: topic._id,
+                        endkey: topic._id,
+                        include_docs: true,
+                        success: function(data) {
+                            var todos = [];
+                            data.rows.forEach(function(row) {
+                                var doc = row.doc;
+
+                                // Move .topic
+                                if (doc.topic) {
+                                    var idx = findTopic(doc.topics, doc.topic);
+                                    if (idx == -1) {
+                                        doc.topics.push(doc.topic);
+                                    }
+                                    delete doc["topic"];
                                 }
-                                delete doc["topic"];
-                            }
-                            
-                            // Replace .topics 
-                            var idx = findTopic(doc.topics, topic);
-                            if (idx > -1) {
-                                doc.topics[idx] = topic;
-                            }
-                            $$this.items[doc._id] = doc;
-                            todos.push(doc);
-                        });
-                        
-                        DB.bulkSave(todos);
-                        /*
-                        $loader.hide();
-                        itemHighlight($item, function(){
-                            $item.removeClass('state-progress');
-                        });*/
+
+                                // Replace .topics 
+                                var idx = findTopic(doc.topics, topic);
+                                if (idx > -1) {
+                                    doc.topics[idx] = topic;
+                                }
+                                $$this.items[doc._id] = doc;
+                                todos.push(doc);
+                            });
+
+                            DB.bulkSave(todos);
+                            /*
+                            $loader.hide();
+                            itemHighlight($item, function(){
+                                $item.removeClass('state-progress');
+                            });*/
+                        }
+                    });
+                }, error: function(status, error, reason) {
+                    $cHeader.find('h1 .text.wrapper').text(editTopic.title);
+                    $loader.hide();
+                    $item.removeClass('state-progress');
+
+                    // Error. How to show?
+                    alert(reason);
+                }
+            });
+
+            function findTopic(topics, topic) {
+                if (!topic || !topics)
+                    return -1;
+                for(var i = 0; i < topics.length; i++) {
+                    if (topics[i]._id == topic) {
+                        return i;
                     }
-                });
-            }, error: function(status, error, reason) {
-                $cHeader.find('h1 .text.wrapper').text(editTopic.title);
-                $loader.hide();
-                $item.removeClass('state-progress');
-                
-                // Error. How to show?
-                alert(reason);
+                }
+                return -1;
             }
         });
-        
-        function findTopic(topics, topic) {
-            if (!topic || !topics)
-                return -1;
-            for(var i = 0; i < topics.length; i++) {
-                if (topics[i]._id == topic) {
-                    return i;
-                }
-            }
-            return -1;
-        }
     }
     
     function topicEditClose() {

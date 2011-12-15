@@ -24,9 +24,6 @@ function() {
         var id = $item.data('id');
         var doc = API.cachedDocs[id];
         if (doc) {
-            if (doc.ref) {
-                doc = doc.ref;
-            }
             if (doc.parent)
                 return true;
         }

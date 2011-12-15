@@ -1,16 +1,17 @@
-function(e, notification) {
+function(e, status, topics) {
     var $$this = $$(this);
     
-    $$this.items[notification._id] = notification;
+    $$this.items[status._id] = status;
     var context = $$this.functions.getItemContext(
-        notification,
-        $$this.filter
+        status,
+        $$this.filter,
+        topics
     );
     
-    var flowView = API.flow.lookupView({db: notification.db}, context.flowView || "default");
+    var flowView = API.flow.lookupView({db: status.db}, context.flowView || "default");
     
     if (flowView && flowView.data) {
-        $.extend(context, flowView.data(notification, context));
+        $.extend(context, flowView.data(status, context, topics));
     }
     
     $$this.mustache = flowView && flowView.mustache || $$this.evently['default-view'].mustache;

@@ -5,7 +5,7 @@
         <div class="gazette">
             <div class="item">
                 <div class="divider"></div>
-                <h3 class="post-title"><a href="{{pageUrl}}">{{title}}</a></h3>
+                <h3 class="post-title"><a href="{{pageUrl}}">{{#title}}{{title}}{{/title}}{{^title}}{{pageUrl}}{{/title}}</a></h3>
                 <div class="content">
                     {{#image_url}}
                     <div class="thumbnail align-left"><div class="crop"><a href="{{pageUrl}}"><img src="{{image_url}}"></a></div></div>
@@ -27,7 +27,7 @@
             </div>
             <div class="content">
                 <div class="head">
-                    <a href="{{pageUrl}}" class="title">{{title}}</a>
+                    <a href="{{pageUrl}}" class="title">{{#title}}{{title}}{{/title}}{{^title}}{{pageUrl}}{{/title}}</a>
                     <span class="source">
                         <a href="{{pageUrl}}"><img src="{{favicon_url}}" class="favicon"> {{provider_name}}</a>
                     </span>

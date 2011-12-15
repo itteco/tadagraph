@@ -52,14 +52,7 @@ function(page, match, widgets, filter) {
             view: 'details'
         });
 
-        // TODO: dirty hack.
-        if (doc.type == 'todo') {
-            setFilter($.extend(true, {}, filter, {
-                tag: 'todo'
-            }));
-        } else {
-            setFilter(filter);
-        }
+        setFilter(filter);
 
         setTitle(doc);
         

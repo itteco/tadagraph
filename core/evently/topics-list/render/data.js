@@ -7,23 +7,18 @@ function(e, newItems) {
     
     var filter = getFilter();
     
-    var topicsByDB = $$("#id_topics").topicsByDB[filter.db.type];
-    var topics;
-    if (filter.db.name && topicsByDB && topicsByDB[filter.db.name]) {
-        topics = topicsByDB[filter.db.name];
-    } else {
-        topics = [];
-    }
+    var topicsDict = $$this.topics;
+    var topicsTime = $$this.topicsTime;
     
-    var topicsTime = $$this.topics;
-    
-    var items = [];
-    topics = topics.filter(function(topic) {
-        return !filter.tag || topic.tags && topic.tags.indexOf(filter.tag) !== -1;
+    var topics = [];
+    $.forIn(topicsDict, function(topicId, topic)  {
+        if (!filter.tag || topic.tags && topic.tags.indexOf(filter.tag) !== -1)
+            topics.push(topic);
     });
 
     $$this.hasTopics = topics.length > 0;
     
+    var items = [];
     topics.forEach(function(topic) {
         var filter = {topic: topic};
         var links = getTopicTagsMenu(topic, filter)
@@ -64,7 +59,7 @@ function(e, newItems) {
     });
     
     items.push({
-      hidden: true
+        hidden: true
     });
 
     return {

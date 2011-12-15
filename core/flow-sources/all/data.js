@@ -67,12 +67,12 @@ function(filter) {
     }
     
     function _inOwners(nickname, doc) {
-        if (doc.ref.owner && doc.ref.owner.id == nickname)
+        if (doc.owner && doc.owner.id == nickname)
             return true;
 
-        if (doc.ref.owners)
-            for (var i = 0; i < doc.ref.owners.length; i++)
-                if (doc.ref.owners[i].id == nickname)
+        if (doc.owners)
+            for (var i = 0; i < doc.owners.length; i++)
+                if (doc.owners[i].id == nickname)
                     return true;
         
         return false;
@@ -93,8 +93,8 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                return doc.type == 'notification'
-                    && tagFilter(doc.ref);
+                return doc.type == 'status'
+                    && tagFilter(doc);
             }
         };
     }
@@ -110,10 +110,10 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                if (doc.type == 'notification' && doc.ref) {
-                    for (var cursor = doc.ref; cursor; cursor = cursor.parent) {
+                if (doc.type == 'status') {
+                    for (var cursor = doc; cursor; cursor = cursor.parent) {
                         if (cursor._id == parentId) {
-                            return tagFilter(doc.ref);
+                            return tagFilter(doc);
                         }
                     }
                 }
@@ -133,9 +133,9 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                return doc.type == 'notification' 
+                return doc.type == 'status' 
                     && _inOwners(nickname, doc)
-                    && tagFilter(doc.ref);
+                    && tagFilter(doc);
             }
         };
     }
@@ -151,9 +151,9 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                return doc.type == 'notification'
-                    && _inTags(tag, doc.ref)
-                    && tagFilter(doc.ref);
+                return doc.type == 'status'
+                    && _inTags(tag, doc)
+                    && tagFilter(doc);
             }
         };
     }
@@ -169,10 +169,10 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                return doc.type == 'notification'
-                    && _inTags(tag, doc.ref)
+                return doc.type == 'status'
+                    && _inTags(tag, doc)
                     && _inOwners(nickname, doc)
-                    && tagFilter(doc.ref);
+                    && tagFilter(doc);
             }
         };
     }
@@ -188,9 +188,9 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                return doc.type == 'notification'
-                    && API.topics.inTopic(doc.ref, topicId)
-                    && tagFilter(doc.ref);
+                return doc.type == 'status'
+                    && API.topics.inTopic(doc, topicId)
+                    && tagFilter(doc);
             }
         };
     }
@@ -206,10 +206,10 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                return doc.type == 'notification' 
-                    && API.topics.inTopic(doc.ref, topicId)
+                return doc.type == 'status' 
+                    && API.topics.inTopic(doc, topicId)
                     && _inOwners(nickname, doc)
-                    && tagFilter(doc.ref);
+                    && tagFilter(doc);
             }
         };
     }
@@ -225,10 +225,10 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                return doc.type == 'notification'
-                    && API.topics.inTopic(doc.ref, topicId)
-                    && _inTags(tag, doc.ref)
-                    && tagFilter(doc.ref);
+                return doc.type == 'status'
+                    && API.topics.inTopic(doc, topicId)
+                    && _inTags(tag, doc)
+                    && tagFilter(doc);
             }
         };
     }
@@ -244,11 +244,11 @@ function(filter) {
                 }
             },
             filterCallback: function(doc) {
-                return doc.type == 'notification'
-                    && API.topics.inTopic(doc.ref, topicId)
-                    && _inTags(tag, doc.ref)
+                return doc.type == 'status'
+                    && API.topics.inTopic(doc, topicId)
+                    && _inTags(tag, doc)
                     && _inOwners(nickname, doc)
-                    && tagFilter(doc.ref);
+                    && tagFilter(doc);
             }
         };
     }

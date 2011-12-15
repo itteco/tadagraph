@@ -25,7 +25,8 @@ function(e, options) {
     var filter = API.filterPrepare({topic: topic});
     topic.tags = [];
     tags.forEach(function(tag) {
-        topic.tags = API.tags.add(tag, topic.tags, API.tags.desc(filter));
+        if (topic.tags.indexOf(tag) == -1)
+            topic.tags.push(tag);
     });
 
     var DB = API.filterDB(filter);

@@ -1,4 +1,4 @@
-function(e) {
+function(e, topics) {
     var filter = getFilter();
     
     var view = getMenuItem(filter, filter.view);
@@ -18,16 +18,10 @@ function(e) {
         filterTag = view.topicTag.tag || "";
     }
     
-    var topicsByDB = $$("#id_topics").topicsByDB;
-    var topics;
-    if (filter.db.name && filter.db.type != "user" && (topicsByDB[filter.db.type] || {})[filter.db.name]) {
-        topics = topicsByDB[filter.db.type][filter.db.name];
-    } else {
-        topics = [];
-    }
-    
-    var filteredTopics = topics.filter(function(topic) {
-        return !topic.archived && (!filterTag || topic.tags && jQuery.inArray(filterTag, topic.tags) >= 0);
+    var filteredTopics = [];
+    $.forIn(topics, function(topicId, topic) {
+        if (!topic.archived && (!filterTag || topic.tags && topic.tags.indexOf(filterTag) >= 0))
+            filteredTopics.push(topic)
     });
     
     // Todolist hardcode for backlog "later".

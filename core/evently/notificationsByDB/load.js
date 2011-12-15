@@ -124,9 +124,12 @@ function(e) {
                 }
 
                 API.cacheDoc(doc);
-                API.cacheDoc(doc.ref);
-                $elem.trigger("renderItem", [doc]);
+                API.filterTopics(doc, function(_error, topics) {
+                    $elem.trigger("renderItem", [doc, topics]);
+                });
             });
+        
+        $(window).trigger('widget-content-changed', [$elem, filter]);
         
         $$elem.loading = false;
         

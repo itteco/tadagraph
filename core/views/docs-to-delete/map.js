@@ -1,5 +1,8 @@
-function(doc) {
-    for (var cursor = (doc.type && doc.type == 'notification')? doc.ref: doc; cursor; cursor = cursor.parent) {
-        emit(cursor._id, {rev: doc._rev});
+(function(doc) {
+    if (doc.type == 'status') {
+        var val = {rev: doc._rev};
+        for (var cursor = doc; cursor; cursor = cursor.parent) {
+            emit(cursor._id, val);
+        }
     }
-}
+})

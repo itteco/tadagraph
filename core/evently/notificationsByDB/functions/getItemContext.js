@@ -1,8 +1,8 @@
-function(notification, filter) {
+function(status, filter, topics) {
     var reply_to = "";
 
-    var doc = notification.ref;
-    var body = notification.body;
+    var doc = status;
+    var body = status.body;
     
     if (doc.parent && doc.parent.created_by) {
         if (doc.parent.created_by.nickname) {
@@ -16,18 +16,16 @@ function(notification, filter) {
     var created_by_id,
         created_by_nickname;
     
-    if (notification.created_by.id && notification.created_by.nickname) {
-        created_by_id = notification.created_by.id;
-        created_by_nickname = notification.created_by.nickname;
+    if (status.created_by.id && status.created_by.nickname) {
+        created_by_id = status.created_by.id;
+        created_by_nickname = status.created_by.nickname;
     } else {
-        created_by_id = notification.created_by;
-        created_by_nickname = notification.created_by;
+        created_by_id = status.created_by;
+        created_by_nickname = status.created_by;
     }
     
     var tagsDesc = API.tags.desc(API.filterPrepare({parent: doc}));
     var tags = doc.tags? doc.tags.slice(0): [];
-    if (doc.type != 'status' && $.inArray(doc.type, tags) == -1)
-        tags.push(doc.type);
     var compactedTags = API.tags.compact(tags, tagsDesc)
     var _badges = API.tags.extractBadges(compactedTags, tagsDesc);
     
@@ -53,10 +51,10 @@ function(notification, filter) {
     var attachments = API.prepare.attachments(doc, {limit: 4});
     var embedded = API.prepare.embedded(doc);
     if (doc.tags) {
-        if (jQuery.inArray("dm", doc.tags) >= 0 && notification.db.type == "person") {
+        if (jQuery.inArray("dm", doc.tags) >= 0 && status.db.type == "person") {
 //            badges.push({type: "dm"});
-            if (notification.db.name != notification.created_by.id) {
-                body = $.trim(body.replace(/\B#dm\s*/g, "").replace(new RegExp("\\B@" + notification.db.name + "\\s*", "g"), ""));
+            if (status.db.name != status.created_by.id) {
+                body = $.trim(body.replace(/\B#dm\s*/g, "").replace(new RegExp("\\B@" + status.db.name + "\\s*", "g"), ""));
             }
         }
         
@@ -73,13 +71,6 @@ function(notification, filter) {
             });
         }
     }
-    /*
-    // TODO: hardcode. 
-    remmed: testing topic body widget wich redirects to topic log.
-    if (type == "topic-body") {
-        url = getTopicUrl(notification.ref.topic);
-    }
-    */
     
     var forwarded = false;
     if (doc.forwarded_info) {
@@ -117,13 +108,10 @@ function(notification, filter) {
             thisweek: true,
             today: true,
             tomorrow: true
-        }
+        },
+        topics: topics
     });
-    
     var renderedBody = result.body;
-    if (doc.parent && trimMeta(doc.body) == "") {
-        renderedBody = "";
-    }
     
     var extraTags = compactedTags.filter(function(tag) {
         return !(tag in result.bodyTags) 
@@ -134,14 +122,13 @@ function(notification, filter) {
         return {tag: tag, url: getUrlByFilter({db: getFilter().db, tag: tag})};
     });
     
-    var storedTopics = $$("#id_topics").storedTopics;
     var hideTopics = filter.topic? [filter.topic._id]: [];
     var extraTopics = getDocTopics(doc).filter(function(topic) {
         return !((topic.title || '').toLowerCase() in result.bodyTopics)
                 && $.inArray(topic._id, hideTopics) == -1;
         
     }).map(function(topic) {
-        topic = storedTopics[topic._id] || topic;
+        topic = topics[topic._id] || topic;
         return $.extend({}, topic, {url: getTopicUrl(topic)})
     });
     
@@ -151,7 +138,7 @@ function(notification, filter) {
             hiddenCp = doc.cp;
     }
 
-    var db = notification.db;
+    var db = status.db;
     var DB = API.filterDB({parent: doc});
     var spaceName = API.filterSpaceName(API.filterPrepare({parent: doc}));
     
@@ -165,12 +152,12 @@ function(notification, filter) {
     }
     
     spaceName = filter.db.name? null: spaceName;
-    
+
     return {
         flowView: flowView,
-        id: notification._id,
+        id: status._id,
         intId: intId,
-        offline: !notification._rev,
+        offline: !status._rev,
         created_by_id: created_by_id,
         creatorAvatar: API.avatarUrl(doc.created_by.id),
         created_by_nickname: created_by_nickname,
@@ -181,8 +168,8 @@ function(notification, filter) {
         type: doc.type,
         badge: badges,
         body: renderedBody,
-        created_at: API.formatShortDate(notification.created_at),
-        created_at_orig: API.parseDate(notification.created_at)
+        created_at: API.formatShortDate(status.created_at),
+        created_at_orig: API.parseDate(status.created_at)
                             .toLocaleString(),
         reply_to: reply_to,
         reply_url: getUrlByFilter({parent: doc.parent}),
@@ -194,7 +181,7 @@ function(notification, filter) {
         embedded: embedded,
         docId: doc._id,
         docUrl: getUrlByFilter({parent: doc}),
-        isNew: API.isViewed && !API.isViewed(notification) && notification._rev || false,
+        isNew: API.isViewed && !API.isViewed(status) && status._rev && true || false,
         forwarded: forwarded,
         forwarded_by_id: forwarded && doc.forwarded_info.by.id,
         forwarderAvatar: forwarded && API.avatarUrl(doc.forwarded_info.by.id),

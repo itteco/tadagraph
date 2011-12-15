@@ -3,7 +3,5 @@ function(e, match) {
     
     $.evently.connect($(document.body), $(".app-menu", this), ["showLoading", "hideLoading"]);
     
-    $.evently.connect($("#notifications_count_widget"), $(".topics"), ["setNotificationsCount"]);
-    
     $(".app-menu", this).evently("space-menu", app);
 }

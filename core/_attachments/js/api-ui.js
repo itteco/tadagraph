@@ -30,44 +30,49 @@ var createDialog = function(dialogId) {
             after: function() {
                // var $this = $(this);
                 $dialog = $this.find('.tdialog');
-                $dialog.dialog({
-                    dialogClass: 'tdialog manage',
-                    width: 530,
-                    height: 'auto',
-                    resizable: false,
-                    modal: true,
-                    hide: 'fade',
-                    autoOpen: false,
-                    create: function() {
-                        var $dialog = $(this);
-                        $$(this).app = APPS[parts[0]];
-
-                        var $submit = $dialog.find('.button .button-submit').button();
-                        var $message = $dialog.find('.controls .message');
-                        $submit.click(function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            $message.hide();
-                            $this.trigger('_submit', [$dialog, $dialog.data('callback')]);
-                        });
-                        $dialog.keyup(function(e) {
-                            if (e.keyCode == 13 || e.keyCode == 10) {
-                                $submit.click();
-                            }
-                        });
-
-                        $this.trigger('init', [$dialog]);
+                $dialog.dialog($.extend(
+                    {
+                        dialogClass: 'tdialog manage',
+                        width: 530,
+                        height: 'auto',
+                        resizable: false,
+                        modal: true,
+                        hide: 'fade',
+                        autoOpen: false
                     },
-                    open: function() {
-                        var $dialog = $(this);
+                    stub.options || {},
+                    {
+                        create: function() {
+                            var $dialog = $(this);
+                            $$(this).app = APPS[parts[0]];
 
-                        $dialog.find('.controls .message').hide();
-                        $dialog.find('.button .button-submit').button('enable').removeClass('ui-state-progress');
-                        $this.trigger('open', [$dialog, $dialog.data('data')]);
+                            var $submit = $dialog.find('.button .button-submit').button();
+                            var $message = $dialog.find('.controls .message');
+                            $submit.click(function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                $message.hide();
+                                $this.trigger('_submit', [$dialog, $dialog.data('callback')]);
+                            });
+                            $dialog.keyup(function(e) {
+                                if (e.keyCode == 13 || e.keyCode == 10) {
+                                    $submit.click();
+                                }
+                            });
+
+                            $this.trigger('init', [$dialog]);
+                        },
+                        open: function() {
+                            var $dialog = $(this);
+
+                            $dialog.find('.controls .message').hide();
+                            $dialog.find('.button .button-submit').button('enable').removeClass('ui-state-progress');
+                            $this.trigger('open', [$dialog, $dialog.data('data')]);
 
 
+                        }
                     }
-                });
+                ));
             }
         },
         init: stub.init || function(e) {e.stopPropagation();},
@@ -75,22 +80,22 @@ var createDialog = function(dialogId) {
         _submit: stub.submit,
         loading: function (e, flag){
             var $submit = $dialog.find('.button .button-submit').button();
-            $submit.button(flag?'disable':'enable')[(flag?'add':'remove')+'Class']('ui-state-progress');
-            $dialog.dialog(flag?'disable':'enable');
+            $submit.button(flag? 'disable': 'enable').toggleClass('ui-state-progress', flag);
+            $dialog.dialog(flag? 'disable': 'enable');
             return $dialog;
         },
         close: function (e){
-             $dialog.dialog('close');
+            $dialog.dialog('close');
             return $dialog;
         },
         submit: function (e, data){
-             $this.trigger('_submit', [$dialog, $dialog.data('callback'), data]);
+            $this.trigger('_submit', [$dialog, $dialog.data('callback'), data]);
             return $dialog;
         },
         hint: function (e, text, isError){
             var $message = $dialog.find('.controls .message');
-            $message.removeClass(!isError?'error':'success').addClass(isError?'error':'success').html(text);
-            $message[text?'show':'hide']();
+            $message.removeClass(!isError? 'error': 'success').addClass(isError? 'error': 'success').html(text);
+            $message[text? 'show': 'hide']();
             $message.find('a').click(function(e) { $dialog.dialog('close');});
             return $dialog;
         }

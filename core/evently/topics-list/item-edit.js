@@ -12,32 +12,34 @@ function(e) {
         return false;
     }
 
-    var topic = $$("#id_topics").storedTopics[$item.data("id")];
-    
-    $item.hide().after($form);
-    if (topic.archived) {
-        $('.archived input[type="checkbox"]', $form).attr("checked", "checked");
-    } else {
-        $('.archived input[type="checkbox"]', $form).removeAttr("checked");
-    }
+    API.filterTopics(getFilter(), function(_error, topics) {
+        var topic = topics[$item.data("id")];
 
-    var $tags = $('.tags', $form);
-    $tags.html("");
-    getTopicTagsMenu(topic).forEach(function(tagMenu, i) {
-        if (i > 0) { // skip flow item
-            var $tagItem = $($.mustache('<label><input type="checkbox" value="{{tag}}"/>{{title}}</label>', {
-                tag: tagMenu.tag,
-                title: tagMenu.title
-            }));
-            if (!tagMenu.hide)
-                $tagItem.find('input').attr("checked", "checked");
-            
-            $tags.append($tagItem);
+        $item.hide().after($form);
+        if (topic.archived) {
+            $('.archived input[type="checkbox"]', $form).attr("checked", "checked");
+        } else {
+            $('.archived input[type="checkbox"]', $form).removeAttr("checked");
         }
-    });
 
-    $form.show();
-    $form.find('input[type=text]:first').val($.trim(topic.title)).focus();
-    
-    return false;
+        var $tags = $('.tags', $form);
+        $tags.html("");
+        getTopicTagsMenu(topic).forEach(function(tagMenu, i) {
+            if (i > 0) { // skip flow item
+                var $tagItem = $($.mustache('<label><input type="checkbox" value="{{tag}}"/>{{title}}</label>', {
+                    tag: tagMenu.tag,
+                    title: tagMenu.title
+                }));
+                if (!tagMenu.hide)
+                    $tagItem.find('input').attr("checked", "checked");
+
+                $tags.append($tagItem);
+            }
+        });
+
+        $form.show();
+        $form.find('input[type=text]:first').val($.trim(topic.title)).focus();
+
+        return false;
+    });
 }

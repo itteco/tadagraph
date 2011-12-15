@@ -39,28 +39,6 @@ function mainInit() {
         // Save log about error.
         $.log("error: " + e);
         API.error(e);
-        API.username(function(_error, username) {
-            var userDB = API.userDB();
-            var profile = API.profile();
-            userDB.saveDoc({
-                type: "log",
-                ver: 2,
-                db: {
-                    name: userDB.name,
-                    type: userDB.type
-                },
-                created_at: new Date(),
-                level: "error",
-                message: {
-                    error: "" + e,
-                    url: document.location.href
-                },
-                user: {
-                    id: username,
-                    nickname: profile? profile.nickname: username
-                }
-            });
-        });
     };
 
     var appLoad = function(resp) {
@@ -86,7 +64,9 @@ function mainInit() {
                     API.username(function() {
                         API.profile();
 
-                        API.userStorage.init(done);
+                        // DB storage disabled.
+                        //API.userStorage.init(done);
+                        done();
                     });
                 }
             }, {
@@ -115,7 +95,6 @@ function mainInit() {
             $changesManager.evently("docChangesManager", core);
             $inlineForm.evently("basicForm", core, [{inline: true}]);
 
-            $("#id_topics").evently("topics-loader", core);
             $pages.evently("pageManager", core);
             $("#id_tada_edit").evently("itemEditForm", core);
             $replyForm.evently("replyDialog", core);
@@ -135,8 +114,8 @@ function mainInit() {
 
             API.trigger('apps-loaded');
 
-            API.bind("afterPageShown", function(e, page,pageWidgetId){
-                $('.subnav .account-menu')[((pageWidgetId==='teamfm-manage/pageAccount')?'add':'remove')+'Class']('selected');
+            API.bind("afterPageShown", function(e, page, pageWidgetId){
+                $('.subnav .account-menu').toggleClass('selected', pageWidgetId === 'teamfm-manage/pageAccount');
 
             })
         }

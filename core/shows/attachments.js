@@ -1,4 +1,4 @@
-function(doc, req) {  
+(function(doc, req) {  
     if (doc.attachments) {
         var mustache = require('vendor/couchapp/lib/mustache');
         var images = doc.attachments.filter(function(attachment) {
@@ -10,4 +10,4 @@ function(doc, req) {
             images: images
         });
     }
-}
+})

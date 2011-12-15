@@ -27,7 +27,15 @@ function forEachApp(callback) {
 function runExtention(filter, extention, args) {
     API.forEachApp(filter, function(app, appName) {
         if (app.ddoc.extentions && extention in app.ddoc.extentions) {
-            runIfFun2(app.ddoc.extentions[extention], args);
+            var ext = app.ddoc.extentions[extention];
+            if (typeof ext == 'object') {
+                $.forIn(ext, function(id, func) {
+                    runIfFun2(func, args);
+                });
+                
+            } else {
+                runIfFun2(ext, args);
+            }
         }
     });
 }
@@ -112,41 +120,10 @@ function getPrefixMatchByDBType(type) {
     }
 }
 
-// Shortcut for creating notification by ref object.
-function generateNotification(options) {
-    /*
-	 * options = { ref: ref,
-	 *  // non mandatory fields body: body, created_at: created_at, created_by:
-	 * created_by, }
-	 */
-
-    var body = options.body || options.ref.body;
-
-// if (options.ref.owner && options.ref.owner.nickname) {
-// var prefix = "@" + options.ref.owner.nickname;
-// if (body.indexOf(prefix) == -1) {
-// body = prefix + " " + body;
-// }
-// }
-
-    var notification = {
-        _id: $.couch.newUUID(),
-        type: "notification",
-        ver: 1,
-        ref: options.ref,
-        db: options.ref.db,
-        created_at: options.created_at || options.ref.created_at,
-        created_by: options.created_by || options.ref.created_by,
-        body: body
-    };
-
-    return notification;
-}
-
 // Shortcut for attaching parrent document to target.
 function attachReply(doc, replyTo) {
     if (replyTo && doc.db.name == replyTo.db.name) {
-        doc.parent = replyTo.ref? replyTo.ref: replyTo;
+        doc.parent = replyTo;
 
         var topics = [];
         if (doc.parent.topics) {
@@ -206,37 +183,6 @@ function createTopic(DB, topic, callback, fastCreateCallback) {
     });
 }
 
-// Private method for loading or creating topic by name.
-// TODO: Obsolete ?
-function getOrCreateTopic(DB, topic, callback, forceCreate) {
-    if (!topic || topic._id) {
-        callback(topic);
-        return;
-    }
-    if (!topic.title) {
-        callback(null);
-        return;
-    }
-
-    if (forceCreate) {
-        createTopic(DB, topic, callback);
-
-    } else {
-        DB.view("core/topics", {
-            key: [DB.type, DB.name, (topic.title || '').toLowerCase()],
-            include_docs: true,
-            success: function(data) {
-                if (data.rows.length > 0) {
-                    callback(data.rows[0].doc);
-
-                } else {
-                    createTopic(DB, topic, callback);
-                }
-            }
-        });
-    }
-}
-
 function storeTopics(DB, topics, options) {
     if (!topics) {
         options.success();
@@ -244,11 +190,20 @@ function storeTopics(DB, topics, options) {
     }
 
     var titles = [];
-    var titlesIndex = [];
-    topics.forEach(function(topic, i) {
-        titles.push((topic.title || '').toLowerCase());
-        titlesIndex[(topic.title || '').toLowerCase()] = i;
-    });
+    var titlesIndex = {};
+    var i = 0;
+    while (i < topics.length) {
+        var topic = topics[i];
+        var title = (topic.title || '').toLowerCase();
+        if (!(title in titlesIndex)) {
+            titles.push(title);
+            titlesIndex[title] = i;
+            i++;
+        } else {
+            // Remove duplicate topics.
+            topics.splice(i, 1);
+        }
+    }
 
     if (titles.length == 0) {
         options.success();
@@ -270,7 +225,7 @@ function storeTopics(DB, topics, options) {
                 var oldTopic = topics[titlesIndex[row.key[2]]];
                 var updated = false;
 
-                if (oldTopic.tags) {
+                if (oldTopic.tags && !options.doNotChangeExistingTopicTags) {
                     var differs = true;
                     var tags = {};
                     if (currentTopic.tags) {
@@ -297,12 +252,12 @@ function storeTopics(DB, topics, options) {
                     }
                 }
 
-                if (currentTopic.archived) {
-                    // Unarchive existing topic.
-                    currentTopic.archived = false;
-                    updated = true;
-                }
-
+//                if (currentTopic.archived) {
+//                    // Unarchive existing topic.
+//                    currentTopic.archived = false;
+//                    updated = true;
+//                }
+//
                 if (updated) {
                     changedTopics.push(currentTopic);
                 }
@@ -391,188 +346,6 @@ function extractWidgetFunctions(widget) {
     }
 }
 
-// Private storage for all db changes listeners grouped by db.
-var changesListenersByDB = {};
-var waitForChangesStopped = false;
-var waitForChangesCount = 0;
-
-// TODO: automatically unregister listeners with same id while registering.
-function unregisterChangesListener(id) {
-    for(var i in changesListenersByDB) {
-        var listeners = changesListenersByDB[i];
-        var j = 0;
-        while (j < listeners.length) {
-            if (listeners[j].id == id) {
-                listeners.splice(j, 1);
-            } else {
-                j++;
-            }
-        }
-    }
-}
-
-// Public method for changes listening.
-function registerChangesListener(DB, callback, id) {
-    if (changesListenersByDB[DB.uri]) {
-        changesListenersByDB[DB.uri].push({
-            id: id || null,
-            callback: callback
-        });
-    } else {
-        changesListenersByDB[DB.uri] = [{
-            id: id || null,
-            callback: callback
-        }];
-        startWaitingForChanges(DB);
-    }
-}
-
-// Private
-function callChangesListeners(DB, docs) {
-    // $.log("================== starting call changes listeners", db.uri, "doc
-	// count:", docs.length);
-    // var startime1 = +new Date;
-    if (changesListenersByDB[DB.uri]) {
-        var dbListeners = changesListenersByDB[DB.uri].slice(0);
-        dbListeners.forEach(function(listener) {
-            try {
-                // var startime2 = +new Date;
-                listener.callback(docs);
-                /*
-				 * var measured_time = +new Date - startime2; if (measured_time >
-				 * 300) { $.log(listener.callback.toString(), measured_time); }
-				 */
-            } catch(e) {
-                $.log("Error calling changes listener", e,
-                      e.stack && e.stack.toString());
-                API.error(e);
-
-            }
-        });
-    }
-    // var measured_time = +new Date - startime1;
-    // $.log('================== total time:', measured_time, 'ms');
-}
-
-// Private
-function startWaitingForChanges(DB) {
-    DB.info({
-        success: function(data) {
-            // 2000 ms pause needed for Chrome users, browser should stop
-			// showing loading icon.
-            setTimeout(function() {
-                waitForChanges(DB, data["update_seq"])
-            }, 2000);
-        }
-    });
-}
-
-function stopWaitingForChanges(callback) {
-    waitForChangesStopped = true;
-    var timerId = setInterval(function() {
-        if (waitForChangesCount == 0) {
-            clearInterval(timerId);
-            callback();
-        }
-    }, 200);
-}
-
-function dbListenersExist(DB) {
-    return (changesListenersByDB[DB.uri] && changesListenersByDB[DB.uri].length > 0);
-}
-
-// Private
-function waitForChanges(DB, last_seq, errors_count, err_id, timeout) {
-    if (waitForChangesStopped)
-        return;
-
-    timeout = timeout || [0, 1000];
-
-    if (errors_count > 3) {
-      if (!err_id) {
-        $(window).trigger('couchdb-offline');
-        API.online = false;
-      }
-      err_id = err_id || uuid();
-      $(window).trigger('couchapp-error', {
-        _id: err_id,
-        message: timeout[1] <= 200000 ?
-                     'Oops, connection\'s lost.<br />' +
-                     'Trying to re-connect soon...' :
-                     'Oops, connection\'s lost.<br />' +
-                     'Trying to re-connect in ' +
-                     Math.round(timeout[1] / 1000) + ' sec...'
-      });
-    }
-
-    waitForChangesCount++;
-    // I can't understand what is that but it doesn't work on stage.
-    // waitForChanges.previousListener &&
-	// waitForChanges.previousListener.abort();
-    // waitForChanges.previousListener =
-
-    errors_count = errors_count || 0;
-
-    DB.changes({
-        feed: "longpoll",
-        since: last_seq,
-        filter: API.changesFilter,
-        // filters: filterPath,
-        include_docs: true,
-        success: function(data) {
-            if (err_id) {
-              API.online = true;
-              API.offlineQueue.forEach(function(fn) {
-                try {
-                  fn();
-                } catch(e) {
-                }
-              });
-              API.offlineQueue = [];
-              $(window).trigger('couchdb-online');
-              $(window).trigger('couchapp-error', {
-                _id: err_id,
-                hide: true
-              });
-            }
-            waitForChangesCount--;
-
-            var docs = data.results.map(function(seq) {
-                return seq.doc;
-            });
-            if (docs.length > 0)
-                callChangesListeners(DB, docs);
-
-            if (dbListenersExist(DB)) {
-                setTimeout(function() {
-                    waitForChanges(DB, data["last_seq"], 0);
-                }, 100);
-
-            } else {
-                delete changesListenersByDB[DB.uri];
-            }
-        },
-        error: function(status, error, reason, textStatus) {
-            waitForChangesCount--;
-
-            if (dbListenersExist(DB)) {
-                // If reason of error was 'timeout' - wait 5 minutes, else 10 s
-
-                // 1 1
-                setTimeout(function() {
-                    waitForChanges(DB, last_seq, errors_count + 1, err_id,
-                                   errors_count > 3 ?
-                                      [timeout[1], timeout[0] + timeout[1]] :
-                                      timeout);
-                }, timeout[1]);
-
-            } else {
-                delete changesListenersByDB[DB.uri];
-            }
-        }
-    });
-}
-
 // Public. Returns topic url.
 function getTopicUrl(topic) {
     var url;
@@ -586,46 +359,13 @@ function getTopicUrl(topic) {
                 break;
 
             default:
-                url = "javascript:return false";
+                url = "javascript:void(0);";
         }
 
     } else
-        url = "javascript:return false";
+        url = "javascript:void(0);";
 
     return url;
-}
-
-var storeViewedNotificationsQueueTimeout = null;
-var viewedNotificationsQueue = [];
-var viewedNotificationsDict = [];
-
-// Public. Marks notifications as viewed. Document must have viewed_at field.
-function queueViewedNotifications(notifications) {
-    // Clear last shcheduled store event.
-    clearTimeout(storeViewedNotificationsQueueTimeout);
-
-    notifications.forEach(function(notification) {
-        if (notification) {
-            $(window).trigger('viewed-' + notification._id);
-
-            if (!(notification._id in viewedNotificationsDict)) {
-                viewedNotificationsDict[notification._id] = + new Date();
-                viewedNotificationsQueue.push(notification);
-            }
-        }
-    });
-
-    if ((viewedNotificationsQueue.length + notifications.length) > 30) {
-        // If too big queue - store now.
-        storeViewedNotificationsQueue();
-    } else {
-        // Shcheduled new store event.
-        storeViewedNotificationsQueueTimeout = setTimeout(storeViewedNotificationsQueue, 3000);
-    }
-}
-
-function storeViewedNotificationsQueue() {
-    API.storeAsViewed && API.storeAsViewed(viewedNotificationsQueue, viewedNotificationsDict);
 }
 
 var TRIM_META_PATTERN_START = /^(\[[^\[]+\]|@[\w\d-_]+|#[\w\d-_]+|\$\d+cp|\s)+/gi;
@@ -687,6 +427,14 @@ function lexStatusBody(body) {
 
             case '\t':
             case ' ':
+            case '.':
+            case ',':
+            case '!':
+            case '?':
+            case '(':
+            case ')':
+            case '{':
+            case '}':
                 prevIsSeparator = true;
                 break;
 
@@ -697,26 +445,26 @@ function lexStatusBody(body) {
                 var match;
                 switch (body.charAt(i)) {
                     case '#':
-                        if (process(rest, /^(#\d+)(?=(?:$|[\s\.,!?]))/, "num"))
+                        if (process(rest, /^(#\d+)(?=(?:$|[\s\.,!?(){}]))/, "num"))
                             break;
 
-                        process(rest, /^(#[\w\-]+)(?=(?:$|[\s\.,!?]))/, "tag");
+                        process(rest, /^(#[\w\-]+)(?=(?:$|[\s\.,!?(){}]))/, "tag");
                         break;
 
                     case '[':
-                        process(rest, /^(\[[^\]\[\n]+\])(?=(?:$|[\s\.,!?]))/, "topic");
+                        process(rest, /^(\[[^\]\[\n]+\])(?=(?:$|[\s\.,!?(){}]))/, "topic");
                         break;
 
                     case '$':
-                        process(rest, /^(\$\d+cp)(?=(?:$|[\s\.,!?]))/, "cp");
+                        process(rest, /^(\$\d+cp)(?=(?:$|[\s\.,!?(){}]))/, "cp");
                         break;
 
                     case '@':
-                        process(rest, /^(@[\w\-]+)(?=(?:$|[\s\.,!?]))/, "person");
+                        process(rest, /^(@[\w\-]+)(?=(?:$|[\s\.,!?(){}]))/, "person");
                         break;
 
                     case 'h':
-                        process(rest, /^(https?:\/\/[^\s]+[^\s\.,!?])(?=(?:$|[\s\.,!?]))/, "link");
+                        process(rest, /^(https?:\/\/[^\s]+[^\s\.,!?(){}])(?=(?:$|[\s\.,!?(){}]))/, "link");
                         break;
                 }
             }
@@ -732,6 +480,12 @@ function lexStatusBody(body) {
 
 function prepareBody(body, doc, options) {
     options = options || {};
+    
+    var hideTopics = options.hideTopics || options.hideMeta || false;
+    var hideTags = options.hideTags || options.hideMeta || false;
+    var hideOwners = options.hideOwners || options.hideMeta || false;
+    var hideLinks = options.hideLinks || false;
+    var topics = options.topics || {};
 
     var tokens = lexStatusBody(body);
 
@@ -744,6 +498,7 @@ function prepareBody(body, doc, options) {
     tokens.forEach(function(token) {
         switch (token.t) {
             case "person":
+                if (hideOwners) break;
                 var nickname = token.v.substr(1);
                 token.p = nickname;
                 var person = API.profile(nickname) || {id: nickname};
@@ -753,12 +508,14 @@ function prepareBody(body, doc, options) {
                 break;
 
             case "tag":
+                if (hideTags) break;
                 var tag = token.v.substr(1);
                 token.p = tag;
                 bodyTags[tag] = true;
                 break;
 
             case "topic":
+                if (hideTopics) break;
                 var title = token.v.substr(1, token.v.length - 2).toLowerCase();
                 token.p = title;
                 bodyTopics[title] = true;
@@ -865,6 +622,7 @@ function prepareBody(body, doc, options) {
                 break;
 
             case "person":
+                if (hideOwners) break;
                 var nickname = token.p;
                 var person = API.profile(nickname) || {id: nickname, nickname: nickname};
                 if (person.id in docOwners) {
@@ -879,6 +637,7 @@ function prepareBody(body, doc, options) {
                 break;
 
             case "tag":
+                if (hideTags) break;
                 var tag = token.p;
                 if (tag in docTags || highlightTags[tag]) {
                     result += $.mustache('<a data-tag="{{tag}}" href="{{url}}">#{{tag}}</a> ', {
@@ -891,11 +650,12 @@ function prepareBody(body, doc, options) {
                 break;
 
             case "topic":
-                var title = token.p.toLowerCase();
-                if (title in docTopics) {
-                    result += $.mustache('<a href="{{url}}">{{topic}}</a> ', {
-                        topic: token.v,
-                        url: getTopicUrl(docTopics[title])
+                if (hideTopics) break;
+                var topic = docTopics[token.p.toLowerCase()];
+                if (topic) {
+                    result += $.mustache('<a href="{{url}}">[{{topic}}]</a> ', {
+                        topic: (topics[topic._id] || topic).title,
+                        url: getTopicUrl(topic)
                     });
 
                 } else {
@@ -904,6 +664,7 @@ function prepareBody(body, doc, options) {
                 break;
 
             case "link":
+                if (hideLinks) break;
                 var url = token.v;
                 
                 if (url in embedUrls) {
@@ -976,7 +737,7 @@ function applyThumbs($selector) {
  * Doc delete logic.
  */
 
-// Load all documents' children and notifications.
+// Load all documents' children.
 function loadDocumentsToDelete(doc, callback) {
     var DB = API.filterDB({parent: doc});
     DB.view("core/docs-to-delete", {
@@ -988,19 +749,6 @@ function loadDocumentsToDelete(doc, callback) {
             callback(docs);
         }
     });
-}
-
-// Check if children loaded for deletion.
-function checkIfChildrenInDocumentsToDelete(doc, docs) {
-    for(var i = 0; i < docs.length; i++) {
-        var adoc = docs[i];
-        if (adoc.type == "notification" && adoc.ref._id != doc._id) {
-            return true;
-        } else if (adoc.type != "notification" && adoc._id != doc._id) {
-            return true;
-        }
-    }
-    return false;
 }
 
 /*
@@ -1487,60 +1235,34 @@ function storeEmbedAndUpdateRelated(DB, embed, options) {
 function storeStatusAndUpdateNotifications(DB, status, options) {
     API.storeStatus(DB, status, {
         success: function() {
-            DB.view("core/notifications-by-doc-id", {
-                key: status._id,
-                include_docs: true,
-                success: function(data) {
-                    if (data.rows.length > 0) {
-                        var notification = data.rows[0].doc;
-                        notification.ref = status;
-                        notification.body = status.body;
-                        DB.saveDoc(notification, {
-                            success: function() {
-                                DB.saveDoc(notification); // TODO: workaround
-															// for viewed_at
-                                options && options.success && options.success();
-                            },
-                            error: function(status, error, reason) {
-                                options && options.success && options.error(status, error, reason);
-                            }
-                        });
-                    }
-                },
-                error: function(status, error, reason) {
-                    options && options.success && options.error(status, error, reason);
-                }
-            });
+            options && options.success && options.success();
 
         },
         error: function(status, error, reason) {
             options && options.success && options.error(status, error, reason);
-        },
-        withoutNotify: !(!status._rev)
+        }
     });
 }
 
 function getTopic(filter, topicId, callback) {
-    var storedTopics = $$("#id_topics").storedTopics;
+    API.filterTopics(getFilter(), function(_error, topics) {
+        if (topicId in topics) {
+            callback(topics[topicId]);
 
-    if (storedTopics[topicId]) {
-        callback(storedTopics[topicId]);
-
-    } else {
-        var db = API.filterDB(filter);
-        db.openDoc(topicId, {
-            success: function(topic) {
-                storedTopics[topicId] = topic;
-                callback(topic);
-            }
-        });
-    }
+        } else {
+            var db = API.filterDB(filter);
+            db.openDoc(topicId, {
+                success: function(topic) {
+                    topics[topicId] = topic;
+                    callback(topic);
+                }
+            });
+        }
+    });
 }
 
-function filterActiveSpaces() {
-    return function(s) {
-        return s.status.toLowerCase() == "active";
-    }
+function isActiveSpace(s) {
+    return s && s._active;
 }
 
 function textCrop(element) {
@@ -1601,10 +1323,7 @@ function createDocWidget($selector, doc, options) {
     if (!doc.type)
         return null;
 
-    if (!DOC_WIDGETS[doc.type])
-        return null;
-
-    var widget = DOC_WIDGETS[doc.type];
+    var widget = DOC_WIDGETS[doc.type] || DOC_WIDGETS["status"];
 
     // Display all docs as status.
     // TODO: force status files validation?
@@ -1889,12 +1608,12 @@ API.userStorage.init = function(callback) {
 
         data.rows.forEach(function(row) {
             us[row.key] = row.value.value;
-            usRev[row.key] = row.value._rev;
+            usRev[row.key] = row.value.rev;
             $$().set(row.key, row.value.value, true);
         });
 
-        unregisterChangesListener('user-storage');
-        registerChangesListener(DB, function(docs) {
+        API.unregisterChangesListener('user-storage');
+        API.registerChangesListener(DB, function(docs) {
             docs.forEach(function(doc) {
                 if (doc.type !== 'user-storage-property') return;
 
@@ -2008,11 +1727,11 @@ API.prepare.attachments = function(doc, options) {
         images = API.prepare.attachments.extractByType(files, 'img'),
         hasImages = images.length > 0;
 
-    if (space && space.allowPublish) {
+    if (space && space._allowPublish) {
         images = images.map(function(attachment) {
             var result = $.extend(true, {}, attachment);
             result.published = attachment.tags && attachment.tags.indexOf("public") > -1;
-            result.showPublish = result.published || space.isAdmin;
+            result.showPublish = result.published || space._admin;
             return result;
         });
     }
@@ -2101,20 +1820,20 @@ API.prepare.embedded = function(doc) {
             items.push({
                 id: doc._id,
                 refDocId: aDoc._id,
-                favicon_url: doc.preview.favicon_url || API.faviconUrl(doc.preview.original_url),
+                favicon_url: API.faviconUrl(doc.preview.favicon_url || doc.preview.original_url),
                 provider_name: doc.preview.provider_name,
                 pageUrl: doc.preview.url,
                 docUrl: docUrl,
                 title: doc.preview.title,
                 description: !is_image ? API.prepare.truncHtmlToText(doc.preview.description, 600) : null,
                 image_url: image_url,
-                trumb_url: API.trumbUrl(image_url),
+                trumb_url: image_url && API.trumbUrl(image_url) || '',
                 attachmentClass: compact ? "compact" : "",
                 is_image: is_image,
                 is_video: is_video,
                 published: published,
                 html: html,
-                showPublish: space.allowPublish && (published || space.isAdmin)
+                showPublish: space && space._allowPublish && (published || space._admin || space._virtual_admin)
             });
         });
     }
@@ -2140,7 +1859,7 @@ API.prepare.embedded_details = function(doc) {
                 }
             }
             var context = {
-                favicon_url: doc.preview.favicon_url || API.faviconUrl(doc.preview.original_url),
+                favicon_url: API.faviconUrl(doc.preview.favicon_url || doc.preview.original_url),
                 provider_name: doc.preview.provider_name,
                 pageUrl: doc.preview.url,
                 title: doc.preview.title,
@@ -2281,126 +2000,6 @@ API.filterStorage = function(filter) {
 
     else
         return _STORAGE[id] = {};
-};
-
-// Yellow/Unread messages queue
-API.queueNewItems = function(items, callback) {
-    if (items.length <= 0) return;
-
-    API.queueNewItems.dirty = true;
-    API.queueNewItems.queue = API.queueNewItems.queue.add(items);
-
-    items
-    .removeClass('new-item')
-    .filter(':not(.offline)')
-    .filter(function() {
-        var that = $(this),
-        id = that.data('id'),
-        doc = $$(this).doc || API.cachedDocs[id];
-
-        if (doc && doc.owners) {
-            var isOwner = false;
-            doc.owners.forEach(function(owner) {
-                if (owner.id == API.username()) isOwner = true;
-            });
-            if (!isOwner) return false;
-        }
-
-        if (!id) {
-            that.data('id', id = doc && doc._id);
-        }
-
-
-        // TODO: this is very temporary bugfix.
-        if (id) {
-            // if (API.queueNewItems.hasSeen[id]) return false;
-
-            // API.queueNewItems.hasSeen[id] = true;
-
-            if (doc) {
-                if (doc.created_by.id == API.username()) return false;
-                if (API.isViewed && API.isViewed(doc)) return false;
-            }
-
-            function onmouseover() {
-                API.queueNewItems.clean(id, function(ids) {
-                    if (ids.length <= 0) return;
-                    that.unbind('mouseover.queueitems');
-                    queueViewedNotifications([doc]);
-                });
-            }
-
-            that.unbind('mouseover.queueitems')
-            .bind('mouseover.queueitems', onmouseover);
-
-            return true;
-        }
-
-        return false;
-    })
-    .css('background-color', '#f5f9fb');
-
-    if (callback) {
-        var once = false;
-
-        items.data('queueNewItems-callback', function() {
-            if (once) return;
-
-            once = false;
-
-            callback && callback();
-        });
-    }
-};
-
-API.queueNewItems.hasSeen = {};
-API.queueNewItems.queue = $();
-API.queueNewItems.dirty = false;
-
-API.queueNewItems.clean = function(requestedIds, callback) {
-    if (!API.queueNewItems.dirty || API.queueNewItems.mutex) return;
-
-    API.queueNewItems.mutex = setTimeout(function() {
-        API.queueNewItems.mutex = false;
-    }, 400);
-
-    var callbacks = [],
-    ids = [];
-
-    var items = API.queueNewItems.queue
-    .filter(':visible')
-    .filter(function() {
-        return requestedIds.indexOf($(this).data('id')) !== -1;
-    })
-    .each(function() {
-        var that = $(this);
-        callbacks.push(that.data('queueNewItems-callback'));
-        ids.push($(this).data('id'));
-    })
-    .animate({
-        backgroundColor: '#ffffff'
-    }, 1000, function(){
-        items.css('background-color','');
-
-        if (callbacks.length > 0) {
-            callbacks.forEach(function(callback) {
-                try {
-                    typeof callback == 'function' && callback();
-                } catch (e) {
-                    $.log('failed to run callback for new items', callback);
-                }
-            });
-        }
-    });
-
-    API.queueNewItems.queue = API.queueNewItems.queue.filter(function() {
-        var $this = $(this);
-
-        return $this.is(':not(:visible)') || requestedIds.indexOf($this.data('id')) === -1;
-    });
-    API.queueNewItems.dirty = API.queueNewItems.queue.length > 0;
-
-    callback && callback(ids);
 };
 
 // For now this is used for inline doc editor.
@@ -2975,4 +2574,52 @@ function getDocTopics(doc) {
 
 function defaultAvatar(e) {
     e.target.src = 'images/default.png';
+}
+
+function arrayRemove(array, element) {
+    if (!array)
+        return [];
+
+    var i = array.indexOf(element);
+    if (i >= 0)
+        return array.splice(i, 1);
+
+    return array;
+}
+
+function parseQueryString(str) {
+    var vars = [];
+    var arr = str.split('&');
+    var pair;
+    for (var i = 0; i < arr.length; i++) {
+        pair = arr[i].split('=');
+        vars.push(pair[0]);
+        vars[pair[0]] = unescape(pair[1]);
+    }
+    return vars;
+}
+
+function runIfFun2(fun, args, thiz) {
+    // if the field is a function, call it, bound to the widget
+    var f = Object.parse(fun);
+    // $.log(me, fun, args);
+    if (typeof f == "function") {
+        if (DEBUG) {
+            return f.apply(thiz || this, args);
+                
+        } else {
+            try {
+                return f.apply(thiz || this, args);
+            } catch (e) {
+                // IF YOU SEE AN ERROR HERE IT HAPPENED WHEN WE TRIED TO RUN YOUR
+                // FUNCTION
+                $.log({
+                    "message" : "Error in function",
+                    "error" : e,
+                    "src" : fun
+                });
+                throw e;
+            }
+        }
+    }
 }

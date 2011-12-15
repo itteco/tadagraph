@@ -10,6 +10,13 @@ function(e, path) {
             if (match) {
                 if (API.filterValid(filter, page.appName)) {
                     $this.trigger('showPage', [page, match, filter]);
+
+                    // log event in ga
+                    if (window._gaq) { 
+                        var shortPath = document.location.hash.replace(/\/\w{32,}/ig, "").replace(/\/#\d+/ig, "");
+                        _gaq.push( ['_trackEvent', API.profile().nickname, 'view', shortPath] ); 
+                    }
+                    
                     return;
                     
                 } else {

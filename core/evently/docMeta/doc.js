@@ -31,33 +31,18 @@ function(e, doc, options) {
             });
         }
 
-        var storedTopics = $$("#id_topics").storedTopics;
-        getDocTopics(doc).forEach(function(topic) {
-            topic = storedTopics[topic._id] || topic;
-            meta.push({type: 'topic', id: topic._id, label: topic.title});
-        });
-
         if (doc.cp) {
             meta.push({type: "cp", id: "cp", label: "$" + doc.cp + "cp" });
         }
     }
 
     { // fill terms
-        var $$topics = $$("#id_topics");
-
         var terms = $$this.terms = [];
-        { // topics
-            var topics = ($$topics.topicsByDB[doc.db.type] || {})[doc.db.name] || [];
-            topics.forEach(function(topic) {
-                if (!topic.archived)
-                    terms.push("[" + topic.title + "]");
-            });
-        }
 
         { // members
             var database = API.filterSpace({parent: doc});
             if (database) {
-                database.allMembers.forEach(function(userid) {
+                database._allMembers.forEach(function(userid) {
                     var profile = API.profile(userid);
                     if (profile)
                         terms.push("@" + profile.nickname);
@@ -66,7 +51,7 @@ function(e, doc, options) {
         }
     }
 
-    var stepCount = 1;
+    var stepCount = 2;
     var stepNext = function() {
         if (--stepCount === 0) {
             stepFinish();
@@ -77,17 +62,39 @@ function(e, doc, options) {
          $this.trigger("render");
     };
     
-    API.filterTags(API.filterPrepare({parent: doc}), function(error, items) {
-        items.forEach(function(item) {
-            terms.push("#" + item.tag);
-        });
+    var filter = API.filterPrepare({parent: doc});
+    API.filterTags(filter, function(error, items) {
+        if (error) {
+            console.error(error);
+            
+        } else {
+            items.forEach(function(item) {
+                terms.push("#" + item.tag);
+            });
+        }
         
         stepNext();
     });
 
+    API.filterTopics(filter, function(error, topics) {
+        $$this.topics = topics;
+        var topicsByTitle = $$this.topicsByTitle = {};
+        $.forIn(topics, function(topicId, topic) {
+            topicsByTitle[topic.title.toLowerCase()] = topic;
+            if (!topic.archived)
+                terms.push("[" + topic.title + "]");
+        });
+        getDocTopics(doc).forEach(function(topic) {
+            topic = topics[topic._id] || topic;
+            meta.push({type: 'topic', id: topic._id, label: topic.title});
+        });
+        
+        stepNext();
+    });
+    
     if (!sameDoc) {
-        unregisterChangesListener("document-meta");
-        registerChangesListener(API.filterDB({parent: doc}), function(docs) {
+        API.unregisterChangesListener("document-meta");
+        API.registerChangesListener(API.filterDB({parent: doc}), function(docs) {
             if (!($this.is(":visible")))
                 return;
             docs.forEach(function(d) {

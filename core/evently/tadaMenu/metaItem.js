@@ -42,7 +42,7 @@ function(e, $item) {
             $item
                 .removeClass('state-active')
                 .removeClass('state-hover')
-                .find('.button.star, .col.content ul.meta').show();
+                .find('.button.star, .col.content ul.meta').css('display', '');
             metaEditor.$item = null;
         }
     }
@@ -59,29 +59,6 @@ function(e, $item) {
     
     
     var doc = API.cachedDocs[id];
-    if (doc.type == "notification") {
-        var $loader = $item.find('.editor-loader');
-        if ($loader.length == 0) {
-            $item.append('<div class="editor-loader"></div>');
-            $loader = $item.find('.editor-loader');
-        }
-        
-        $item.addClass('state-progress');
-        $loader.show();
-        
-        var DB = API.filterDB({parent: doc});
-        DB.openDoc(doc.ref._id, {
-            success: function(doc) {
-                $item.removeClass('state-progress');
-                $loader.hide();
-                
-                $$this.metaEditor = metaEditor;
-                metaEditor.open($item, doc);
-            }
-        });
-        
-    } else {
-        $$this.metaEditor = metaEditor;
-        metaEditor.open($item, doc);
-    }
+    $$this.metaEditor = metaEditor;
+    metaEditor.open($item, doc);
 }

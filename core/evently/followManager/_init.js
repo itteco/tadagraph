@@ -42,7 +42,7 @@ function(e) {
             }
         });
         
-        registerChangesListener(DB, function(docs) {
+        API.registerChangesListener(DB, function(docs) {
             docs.forEach(function(doc) {
                 if (doc.type && doc.type == 'follow') {
                     follows[doc.ref._id] = doc;

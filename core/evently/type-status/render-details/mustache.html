@@ -11,7 +11,7 @@
         </ul>
     </div>
     <div class="col heading">
-        <img src="{{creatorAvatar}}" class="avatar {{#hideCreator}} hidden{{/hideCreator}}" alt="" title="{{created_by_nickname}}" onerror="defaultAvatar(event)" data-owner="{{created_by_id}}" />
+        <img src="{{creatorAvatar}}" class="avatar {{#hideCreator}} hidden{{/hideCreator}}" alt="" data-id="{{created_by_id}}" title="{{created_by_nickname}}" onerror="defaultAvatar(event)"/>
     </div>
     <div class="col content">
         {{^hideCreator}}

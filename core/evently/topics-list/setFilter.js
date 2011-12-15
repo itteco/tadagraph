@@ -2,14 +2,15 @@ function(e, filter) {
     e.stopPropagation();
     
     var $this = $(this);
+    var $$this = $$(this);
     
-    if (!($this.is(":visible")) || !filter.db.name)
+    if (!$this.is(":visible") || !filter.db.name)
         return;
     
     // Erase widget content before loading.
     $this.html("");
     
-    var topics = $$(this).topics;
+    var topicsTime = $$(this).topicsTime;
     
     $this.trigger("showLoading");
     
@@ -19,21 +20,24 @@ function(e, filter) {
         startkey: [DB.type, DB.name],
         endkey: [DB.type, DB.name, "\ufff0"],
         success: function(data) {
-            for(var id in topics) {
-                delete topics[id];
+            for(var id in topicsTime) {
+                delete topicsTime[id];
             }
             data.rows.forEach(function(row) {
-                topics[row.key[2]] = row.value;
+                topicsTime[row.key[2]] = row.value;
             });
-            
+        
             $this.trigger("hideLoading");
             
-            $this.trigger("render");
+            API.filterTopics(getFilter(), function(_error, topics) {
+                $$this.topics = topics;
+                $this.trigger("render");
+            });
         }
     });
     
-    unregisterChangesListener("new actual topic");
-    registerChangesListener(DB, function(docs) {
+    API.unregisterChangesListener("new actual topic");
+    API.registerChangesListener(DB, function(docs) {
         var changed = false;
         var newItems = {};
         docs.forEach(function(adoc) {
@@ -44,8 +48,8 @@ function(e, filter) {
                 if (adoc.topics)
                     atopics = atopics.concat(adoc.topics);
                 atopics.forEach(function(topic) {
-                    if (!topics[topic._id] || topics[topic._id] < adoc.created_at) {
-                       topics[topic._id] = adoc.created_at;
+                    if (!topicsTime[topic._id] || topicsTime[topic._id] < adoc.created_at) {
+                       topicsTime[topic._id] = adoc.created_at;
                        newItems[topic._id] = true;
                        changed = true;
                     }
@@ -53,7 +57,10 @@ function(e, filter) {
             }
         });
         if (changed) {
-            $this.trigger("render", [newItems]);
+            API.filterTopics(getFilter(), function(_error, topics) {
+                $$this.topics = topics;
+                $this.trigger("render", [newItems]);
+            });
         }
     }, "new actual topic");
 }

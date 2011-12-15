@@ -7,7 +7,7 @@ function() {
             
         } else {
             var space = API.filterSpace(getFilter());
-            enabled = space && !space.uiDisabled;
+            enabled = isActiveSpace(space);
         }
     }
     

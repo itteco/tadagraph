@@ -12,7 +12,7 @@ function(e, $item) {
     }
     
     var doc = API.cachedDocs[id];
-    if (doc.type == "notification") {
+    if (doc.type == "status") {
         var DB = API.filterDB({parent: doc});
         
         var $loader = $item.find('.editor-loader');
@@ -24,7 +24,7 @@ function(e, $item) {
         $item.addClass('state-progress');
         $loader.show();
         
-        DB.openDoc(doc.ref._id, {
+        DB.openDoc(doc._id, {
             success: function(doc) {
                 $item.removeClass('state-progress');
                 $loader.hide();
@@ -43,7 +43,9 @@ function(e, $item) {
             $this.trigger("formClosed", [_this]);
         }
         
+        var oldDb = $$this.currentDB;
         $$this.currentDB = doc.db;
+        $this.trigger("spaceChanged", [$this, doc.db, oldDb]);
         
         var $formEdit = $('.editor.inline.flow.item');
         if ($formEdit.length == 0) {
@@ -62,7 +64,7 @@ function(e, $item) {
         $textarea.css('height','');
         $textarea.val($.trim(doc.body)).elastic().focus();
         var space = API.filterSpace({parent: doc});
-        if (API.username() == doc.created_by.id || space.isAdmin) {
+        if (API.username() == doc.created_by.id || space._admin) {
             //$textarea.parent().show();
             $textarea.removeAttr("disabled");
         } else {

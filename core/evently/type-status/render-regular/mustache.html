@@ -3,7 +3,7 @@
     <a href="{{url}}" class="button details" title="Document details"><span class="icons details"></span></a>
     <a href="#star" class="button star" title="Star" data-follow-id="{{id}}"><span class="icons star"></span></a>
     <div class="col heading">
-        <img src="{{creatorAvatar}}" class="avatar" alt="" title="{{created_by_nickname}}" onerror="defaultAvatar(event)" data-owner="{{created_by_id}}" />
+        <img src="{{creatorAvatar}}" class="avatar" alt="" data-id="{{created_by_id}}" title="{{created_by_nickname}}" onerror="defaultAvatar(event)"/>
         <div class="data">
             <span class="member overflow" title="{{created_by_nickname}}">{{created_by_nickname}}</span>
             <a href="{{url}}" class="timestamp">{{created_at}}</a>
@@ -31,7 +31,7 @@
     <a href="{{url}}" class="button details" title="Document details"><span class="icons details"></span></a>
     <a href="#star" class="button star" title="Star" data-follow-id="{{id}}"><span class="icons star"></span></a>
     <div class="col heading">
-        <img src="{{creatorAvatar}}" class="avatar" alt="" title="{{created_by_nickname}}" onerror="defaultAvatar(event)"/>
+        <img src="{{creatorAvatar}}" class="avatar" alt="" data-id="{{created_by_id}}" title="{{created_by_nickname}}" onerror="defaultAvatar(event)"/>
         <div class="data">
             <span class="member overflow" title="{{created_by_nickname}}">{{created_by_nickname}}</span>
             <a href="{{url}}" class="timestamp">{{created_at}}</a>

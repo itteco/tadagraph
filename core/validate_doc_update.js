@@ -1,4 +1,4 @@
-function(newDoc, oldDoc, userCtx) {
+(function(newDoc, oldDoc, userCtx) {
     function require(field, doc) {
         if (!doc)
             doc = newDoc;
@@ -46,44 +46,8 @@ function(newDoc, oldDoc, userCtx) {
         } else {
            throw {forbidden: "Unsupported topic schema version"};
         }
-    } else if (newDoc.type == "notification") {
-    
-        if (oldDoc) {
-            // For now.
-            //throw {forbidden: "Notification can't be updated"};
-        }
         
-        if (!newDoc.ver) {
-            require("db");
-            require("name", newDoc.db);
-            require("type", newDoc.db);
-            require("ref");
-            require("created_at");
-            require("created_by");
-            require("body");
-        } else if (newDoc.ver == 1) {
-            require("db");
-            require("name", newDoc.db);
-            require("type", newDoc.db);
-            require("ref");
-            require("created_at");
-            require("created_by");
-            require("id", newDoc.created_by);
-            require("nickname", newDoc.created_by);
-            require("body");
-        } else {
-           throw {forbidden: "Unsupported notification schema version"};
-        }
-        
-     // TODO separate push
-     } else if (newDoc.type == "status" || newDoc.type == "push") {
-        
-        // TODO: security hole (need for modify due field)
-//        if (oldDoc) {
-            // For now.
-//            throw {forbidden: "Status can't be updated"};
-//        }
-        
+     } else if (newDoc.type == "status") {
         if (!newDoc.ver) {
             require("db");
             require("name", newDoc.db);
@@ -149,6 +113,7 @@ function(newDoc, oldDoc, userCtx) {
       require('key');
       require('value');
       require('version');
+      
     } else if (newDoc._deleted) {
         if (userCtx.roles.indexOf('_admin') !== -1) {
             return;
@@ -157,20 +122,9 @@ function(newDoc, oldDoc, userCtx) {
             if (oldDoc.type == "topic") {
                 throw {forbidden: "Can't detele topic"};
 
-            } else if (oldDoc.type == "notification") {
-                if (userCtx.name && userCtx.name != oldDoc.ref.created_by.id)
-                    throw {forbidden: "Only (" + oldDoc.created_by.id + ") " + oldDoc.created_by.nickname + " can delete this notification"};
-
             } else if (oldDoc.type == "status") {
                 if (userCtx.name && userCtx.name != oldDoc.created_by.id)
                     throw {forbidden: "Only (" + oldDoc.created_by.id + ") " + oldDoc.created_by.nickname + " can delete this status"};
-
-            } else if (oldDoc.type == "todo") {
-                if (userCtx.name && userCtx.name != oldDoc.created_by.id)
-                    throw {forbidden: "Only (" + oldDoc.created_by.id + ") " + oldDoc.created_by.nickname + " can delete this todo"};
-
-            } else if (oldDoc.type == "log") {
-                throw {forbidden: "Can't detele log"};
 
             } else if (oldDoc.type == "follow") {
                 if (userCtx.name && userCtx.name != oldDoc.db.name)
@@ -195,4 +149,4 @@ function(newDoc, oldDoc, userCtx) {
         if (!doc_type_found)
             throw {forbidden: "Unsupported document type " + newDoc.type};
     }
-}
+})

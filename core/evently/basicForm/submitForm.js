@@ -26,58 +26,60 @@ function(e) {
     $this.trigger("startSaving");
     
     var profile = API.profile();
-    var topics = false;
-    if (getFilter().topicId) {
-        var storedTopics = $$("#id_topics").storedTopics;
-        if (storedTopics[getFilter().topicId]) {
-            topics = [storedTopics[getFilter().topicId]];
-        }
-    }
-
-    var text = $status.val();
-
-    if (getFilter().view == 'contact-history') {
-        var contact = getFilter().nickname;
-
-        if (contact != API.username()) {
-            text = $this.find('.sys-message-type input[name=tada-type]:checked').val() + text;
-            text = '@' + contact + ' ' + text;
-        }
-    }
-    
-    createStatus(DB, text, profile, {topics: topics, parent: $$this.replyTo || getFilter().parent || null}, function(status) {
-        // Attach attachments.
-        var attachments = [];
-        if ($$this.attachmentTasks) {
-            var tasks = $$this.attachmentTasks;
-            for (var i = 0; i < tasks.length; i++)
-                attachments.push(tasks[i].doc);
-        }
-        
-        if (attachments.length > 0) {
-            status.attachments = attachments;
-        }
-        
-        $$this.attachmentTasks = [];
-        if ($$this.attachmentUploader)
-            $$this.attachmentUploader.reset();
-        
-        $status.val('').css('height','');
-        
-        if (!($$this.inline)) {
-            $status.focus();
-        }
-        
-        $this.trigger("clearReply");
-        
-        API.storeStatus(DB, status, {
-            success: function() {
-                $this.trigger("stopSaving");
-            },
-            error: function(status, error, reason) {
-                $.log(status, error, reason);
-                $this.trigger("stopSaving");
+    API.filterTopics(getFilter(), function(_error, spaceTopics) {
+        var topics = false;
+        if (getFilter().topicId) {
+            var topic = spaceTopics[getFilter().topicId];
+            if (topic) {
+                topics = [topic];
             }
+        }
+
+        var text = $status.val();
+
+        if (getFilter().view == 'contact-history') {
+            var contact = getFilter().nickname;
+
+            if (contact != API.username()) {
+                text = $this.find('.sys-message-type input[name=tada-type]:checked').val() + text;
+                text = '@' + contact + ' ' + text;
+            }
+        }
+
+        createStatus(DB, text, profile, {topics: topics, parent: $$this.replyTo || getFilter().parent || null}, function(status) {
+            // Attach attachments.
+            var attachments = [];
+            if ($$this.attachmentTasks) {
+                var tasks = $$this.attachmentTasks;
+                for (var i = 0; i < tasks.length; i++)
+                    attachments.push(tasks[i].doc);
+            }
+
+            if (attachments.length > 0) {
+                status.attachments = attachments;
+            }
+
+            $$this.attachmentTasks = [];
+            if ($$this.attachmentUploader)
+                $$this.attachmentUploader.reset();
+
+            $status.val('').css('height','');
+
+            if (!($$this.inline)) {
+                $status.focus();
+            }
+
+            $this.trigger("clearReply");
+
+            API.storeStatus(DB, status, {
+                success: function() {
+                    $this.trigger("stopSaving");
+                },
+                error: function(status, error, reason) {
+                    $.log(status, error, reason);
+                    $this.trigger("stopSaving");
+                }
+            });
         });
     });
     

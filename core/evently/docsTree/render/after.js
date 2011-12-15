@@ -13,7 +13,7 @@ function() {
         currentTopicId = getFilter().parent.topic._id;
     }
     
-    var $createHelper = $('.create-helper', this);
+    //var $createHelper = $('.create-helper', this);
     
     var root = $$this.root;
     var rootTopics = [];
@@ -22,24 +22,38 @@ function() {
     
     var items = $$this.items;
     for (var id in items) {
+        /*
         var doc = items[id];
         var $itemStub = $('li.item-stub[data-id="' + doc._id + '"]', this);
         createDocWidget($createHelper, doc, {
             hideTopics: rootTopics
         });
+        $.log("cw", $createHelper.html());
         var $item = $createHelper.children();
         $item.addClass($itemStub.data('class'));
         $item.data("level", $itemStub.data("level"));
         $itemStub.after($item);
         $itemStub.remove();
         $$($item).doc = doc;
+        */
+        
+        var doc = items[id];
+        var $itemStub = $('li.item-stub[data-id="' + doc._id + '"]', this);
+        var $container = $itemStub.after('<div></div>').next();
+        
+        createDocWidget($container, doc, {
+            hideTopics: rootTopics
+        });
+        
+        $container.addClass($itemStub.data('class'));
+        $container.data("level", $itemStub.attr("data-level"));
+        $itemStub.remove();
     }
     
     var newItems = $("li.new-item", this);
     newItems.each(function() {
         $(this).find('.fade').hide();
     });
-    API.queueNewItems(newItems);
     
     // Problem: item is highlighted but never became normal.
     // TODO: this hardcode corrupts queueNewItems logic, but can't find faster solution.

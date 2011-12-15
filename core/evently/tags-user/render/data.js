@@ -11,6 +11,30 @@ function(e) {
         }
     }
     
+    var sysTags = {};
+    if (filter.view == 'flow') {
+        API.getMenu(filter).forEach(function(item) {
+            var viewTags = item.tags || [];
+            if (item.tags_by_type && filter.db.type in item.tags_by_type)
+                viewTags = item.tags_by_type[filter.db.type];
+            
+            viewTags.forEach(function(tag) {
+               sysTags[tag] = true;
+            });
+        });
+        
+    } else {
+        var view = getMenuItem(filter, filter.view) || {};
+
+        var viewTags = view.tags || [];
+        if (view.tags_by_type && filter.db.type in view.tags_by_type)
+            viewTags = view.tags_by_type[filter.db.type];
+        
+        viewTags.forEach(function(tag) {
+           sysTags[tag] = true;
+        });
+    }
+    
     var tagsDesc = API.tags.desc(filter);
 
     var mutedTags = $$this.mutedTags;
@@ -19,39 +43,25 @@ function(e) {
     var usedTags = [];
 
     for (var tag in tagDict) {
-        if (!(tag in tagsDesc) && !tag.match(/\d+/) && !(tag in mutedTags)) {
-            usedTags.push({tag: tag, lastUsedTime: tagDict[tag]});
+        if (!(tag in sysTags) && !tag.match(/\d+/) && !(tag in mutedTags) && !(tag in tagsDesc && tagsDesc[tag].hidden)) {
+            usedTags.push(tag);
         }
     }
 
-    if (filterTag && !(filterTag in tagDict) && !(filterTag in tagsDesc)) {
-        usedTags.push({tag: filterTag, lastUsedTime: new Date().getTime()});
+    if (filterTag && !(filterTag in tagDict) && !(filterTag in sysTags)) {
+        usedTags.push(tag);
     }
     
-    usedTags.sort(function(a, b) {
-        if (a.lastUsedTime > b.lastUsedTime) {
-            return -1;
-        } else if (a.lastUsedTime < b.lastUsedTime) {
-            return 1;
-        } else {
-            return 0;
-        }
-    });
+    usedTags.sort();
 
-    var tags = [];
-    var count = 0;
-    for(var i in usedTags) {
-        var tag = usedTags[i].tag;
+    var tags = usedTags.map(function(tag) {
         var selected = filterTag == tag;
-        tags.push({
+        return {
             tag: tag,
             selected: selected,
             url: getUrlByFilter(getFilterWithTag(filter, selected? "": tag))
-        });
-        count += 1;
-        if (count == 10)
-            break;
-    }
+        };
+    });
 
     return {
         show: tags.length > 0,

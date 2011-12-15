@@ -6,5 +6,5 @@ function(e) {
     
     $$this.mutedTags = $$().get("mutedTags") || {}
     
-    API.connectVisible(document.body, $this, ["view-tags", "entered-tag"]);
+    API.connectVisible(document.body, $this, ['view-tags', 'entered-tag']);
 }

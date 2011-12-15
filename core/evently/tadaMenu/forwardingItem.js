@@ -5,7 +5,7 @@ function(e, $item) {
     var $menu = $$(this).$menu;
     
     API.filterSpaces(function(spaces) {
-        spaces = spaces.filter(function(s) { return !s.uiDisabled; })
+        spaces = spaces.filter(isActiveSpace)
         .map(function(s) {
             return {
                 id: s.type + "::" + s.id,

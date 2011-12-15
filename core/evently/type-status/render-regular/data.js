@@ -1,4 +1,4 @@
-function(e) {
+function(e, topics) {
     e.stopPropagation();
     
     var $$this = $$(this);
@@ -47,7 +47,8 @@ function(e) {
     var result = prepareBody(body, doc, {
         hideFirstTags: badges.map(function(i) { return i.type; }),
         hideFirstReply: true,
-        hideFirstIntId: true
+        hideFirstIntId: true,
+        topics: topics
     });
     
     var extraTags = compactedTags.filter(function(tag) {
@@ -59,13 +60,12 @@ function(e) {
         return {tag: tag, url: getUrlByFilter({db: doc.db, tag: tag})};
     });
     
-    var storedTopics = $$("#id_topics").storedTopics;
     var extraTopics = getDocTopics(doc).filter(function(topic) {
         return !(topic.title.toLowerCase() in result.bodyTopics) 
             && $.inArray(topic._id, hideTopics) == -1;
         
     }).map(function(topic) {
-        topic = storedTopics[topic._id] || topic;
+        topic = topics[topic._id] || topic;
         return $.extend({}, topic, { url: getTopicUrl(topic) })
     });
     

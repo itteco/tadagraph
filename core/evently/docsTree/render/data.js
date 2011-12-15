@@ -77,6 +77,6 @@ function(e, newItemsIds) {
         }
         return result;
     }
-    
-    return {items: treeList}
+
+    return {items: treeList};
 }

@@ -304,7 +304,7 @@
     var BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || false;
     var URL = window.URL || window.webkitURL;
     for (var i in groups) {
-      if (!groups.hasOwnProperty(i)) return;
+      if (!groups.hasOwnProperty(i)) continue;
       
       (function(groupKey) {
         var contents = groups[groupKey].join('\r\n');
@@ -332,7 +332,7 @@
         */
         document.body.appendChild(script);
       })(i);
-    };
+    }
       
     var finalCallback = 'final' + Math.round(Math.random() * 1e9)
     

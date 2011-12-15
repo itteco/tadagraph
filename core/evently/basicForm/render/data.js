@@ -5,7 +5,7 @@ function(e, spaces) {
     var selected = $$this.currentDB;
     
     spaces = spaces
-        .filter(function(s) {return !s.uiDisabled;})
+        .filter(function(s) { return s._active; })
         .map(function(s) {
             return {
                 id: s.type + "::" + s.id,

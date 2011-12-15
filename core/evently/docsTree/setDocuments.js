@@ -22,8 +22,8 @@ function(e, options) {
     $this.trigger("render");
     
     var DB = API.filterDB(getFilter());
-    unregisterChangesListener("new project document childs");
-    registerChangesListener(DB, function(docs) {
+    API.unregisterChangesListener("new project document childs");
+    API.registerChangesListener(DB, function(docs) {
         // Check if page alive.
         if ($this.is(":visible")) {
             var changed = false;

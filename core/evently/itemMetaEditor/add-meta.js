@@ -1,6 +1,10 @@
 function(e, type, term) {
-    var meta = $$(this).meta;
-    var doc = $$(this).doc;
+    
+    var $$this = $$(this);
+    
+    var meta = $$this.meta;
+    
+    var topicsByTitle = $$this.topicsByTitle;
 
     var addMeta = function(type, id, label) {
         for (var i = 0; i < meta.length; i++)
@@ -36,13 +40,10 @@ function(e, type, term) {
             break;
             
         case "topic":
-            var topics = ($$("#id_topics").topicsByDB[doc.db.type] || {})[doc.db.name] || [];
             var title = term;
+            var topic = topicsByTitle[title.toLowerCase()];
 
-            var matchedTopics = topics.filter(function(topic) { return title.toLowerCase() == topic.title.toLowerCase() });
-
-            if (matchedTopics.length > 0) {
-                var topic = matchedTopics[0];
+            if (topic) {
                 addMeta('topic', topic._id, '[' + topic.title + ']');
 
             } else {

@@ -6,7 +6,6 @@ function(e, items, newItems) {
     $items.each(function() {
         $(this).find('.fade').hide();
     });
-    API.queueNewItems($items);
     
     $(this).trigger("applyFilter");
     
@@ -72,7 +71,7 @@ function(e, items, newItems) {
         e.stopPropagation();
 
         $cItem = null;
-        $button = $(link).parent();
+        var $button = $(link).parent();
         $button.hide();
         $(that).prepend($form);
         $$(that).editableItem = null;

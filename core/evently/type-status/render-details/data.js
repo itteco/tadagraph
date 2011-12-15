@@ -1,4 +1,4 @@
-function(e) {
+function(e, topics) {
     e.stopPropagation();
     
     var doc = $$(this).doc;
@@ -29,7 +29,8 @@ function(e) {
     } else {
         var result = prepareBody(body, doc, {
             hideFirstTags: badges.map(function(i) { return i.type; }),
-            prependIntId: true
+            prependIntId: true,
+            topics: topics
         });
         body = result.body;
     }

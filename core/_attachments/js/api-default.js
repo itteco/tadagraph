@@ -54,8 +54,8 @@ var loadSpace = function() {
     API.username();
 
     space = APPS.core.ddoc.space;
-    space.member = space.member || [];
-    space.allMembers = space.member || [];
+    space.members = space.members || [];
+    space._allMembers = space.members.map(function(m) { return m.id; });
 };
 
 if (!window.API){
@@ -302,17 +302,12 @@ API.setTitle = function(title) {
 };
 
 API.storeStatus = function(DB, status, options) {
-    var notification = generateNotification({
-        ref: status,
-        privacy: status.privacy
-    });
-
     // Only for new statuses
     if (!status._rev) {
         var userDB = API.userDB();
-        callChangesListeners(userDB, [status, notification]);
+        API.callChangesListeners(userDB, [status]);
         if (DB.uri != userDB.uri) {
-            callChangesListeners(DB, [status, notification]);
+            API.callChangesListeners(DB, [status]);
         }
     }
 
@@ -320,10 +315,8 @@ API.storeStatus = function(DB, status, options) {
         var hooks = status._hooks;
         delete status._hooks;
         storeTopics(DB, status.topics, {
+            doNotChangeExistingTopicTags: true,
             success: function() {
-                // Save log about new tada.
-                API.logEvent && API.logEvent(LogLevel.INFO, "Tada");
-
                 if (hooks && 'pre-store' in hooks) {
                     hooks['pre-store'].forEach(function(hook) {
                         hook(status);
@@ -335,26 +328,6 @@ API.storeStatus = function(DB, status, options) {
                             hooks['post-store'].forEach(function(hook) {
                                 hook(status);
                             });
-                        }
-                        if (!options.withoutNotify) {
-
-                            DB.saveDoc(notification, {
-                                success: function() {
-
-                                    if (options.success)
-                                        options.success();
-                                },
-                                error: function(status, error, reason) {
-                                    if (options.error)
-                                        options.error(status, error, reason);
-                                    else
-                                        throw new Error("submitForm, save status notification error: " + status + ": " + error + ": " + reason);
-                                }
-                            });
-
-                        } else {
-                            if (options.success)
-                                options.success();
                         }
                     },
                     error: function(status, error, reason) {
@@ -437,18 +410,16 @@ API.filterTags = function(filter, callback, listen) {
             }
         });
         
-        registerChangesListener(DB, function(docs) {
+        API.registerChangesListener(DB, function(docs) {
             var reload = false;
             docs.forEach(function(doc) {
-                if (doc.type == 'notification') {
-                    if (doc.ref.tags) {
-                        var created_at = new Date(doc.created_at).getTime();
-                        doc.ref.tags.forEach(function(tag) {
-                            if (!(tag in TAGS) || TAGS[tag] < created_at)
-                                TAGS[tag] = created_at;
-                            reload = true;
-                        });
-                    }
+                if (doc.type == 'status' && doc.tags) {
+                    var created_at = new Date(doc.created_at).getTime();
+                    doc.tags.forEach(function(tag) {
+                        if (!(tag in TAGS) || TAGS[tag] < created_at)
+                            TAGS[tag] = created_at;
+                        reload = true;
+                    });
                 }
             });
             if (reload) {
@@ -471,6 +442,86 @@ API.filterTags = function(filter, callback, listen) {
         callback(undefined, TAGS_ITEMS);
     }
 };
+
+
+var TOPICS = {};
+var TOPICS_LOADED = false;
+var TOPICS_LISTENERS = {};
+var TOPICS_WAITERS = null;
+
+var addTopic = function(topic) {
+    TOPICS[topic._id] = topic;
+};
+
+API.filterTopics = function(filter, callback, listen) {
+    if (listen) {
+        TOPICS_LISTENERS[listen] = callback;
+    }
+    if (!TOPICS_LOADED) {
+        if (TOPICS_WAITERS) {
+            TOPICS_WAITERS.push(callback);
+            return;
+        }
+
+        TOPICS_WAITERS = [];
+        TOPICS_WAITERS.push(callback);
+
+        var DB = API.filterDB(filter);
+        DB.view("core/topics", {
+            include_docs: true,
+            success: function(data) {
+                var topics = [];
+                data.rows.forEach(function(row) {
+                    if (pushTopic(row.doc)) {
+                        topics.push(row.doc);
+                    }
+                });
+                data.rows.forEach(function(row) {
+                    addTopic(row.doc);
+                });
+
+                TOPICS_LOADED = true;
+                var waiters = TOPICS_WAITERS;
+                TOPICS_WAITERS = null;
+                $(document).trigger('topics-changed', [TOPICS]);
+                waiters.forEach(function(callback) {
+                    callback(null, TOPICS);
+                });
+            },
+            error: function(status, error, reason) {
+                $.log(status, error, reason);
+
+                var waiters = TOPICS_WAITERS;
+                TOPICS_WAITERS = true;
+                waiters.forEach(function(callback) {
+                    callback(error);
+                });
+            }
+        });
+
+        API.registerChangesListener(DB, function(docs) {
+            var changed = false;
+            var topics = {};
+            docs.forEach(function(doc) {
+                if (doc.type == 'topic') {
+                    topics[doc._id] = doc;
+                    addTopic(doc);
+                    changed = true;
+                }
+            });
+            if (changed) {
+                $(document).trigger('topics-changed', [topics]);
+                $.forIn(TOPICS_LISTENERS, function(key, callback) {
+                    callback(null, TOPICS);
+                });
+            }
+        });
+
+    } else {
+        callback(null, TOPICS);
+    }
+};
+
 API.trumbUrl = function(url, size) {
     return url;
 };
@@ -491,5 +542,166 @@ API.username = function(callback) {
     }
     return username;
 };
+
+// Private storage for all db changes listeners grouped by db.
+var changesListenersByDB = {};
+
+// TODO: automatically unregister listeners with same id while registering.
+API.unregisterChangesListener = function(id) {
+    for(var i in changesListenersByDB) {
+        var listeners = changesListenersByDB[i];
+        var j = 0;
+        while (j < listeners.length) {
+            if (listeners[j].id == id) {
+                listeners.splice(j, 1);
+            } else {
+                j++;
+            }
+        }
+    }
+};
+
+// Public method for changes listening.
+API.registerChangesListener = function(DB, callback, id) {
+    if (changesListenersByDB[DB.uri]) {
+        changesListenersByDB[DB.uri].push({
+            id: id || null,
+            callback: callback
+        });
+    } else {
+        changesListenersByDB[DB.uri] = [{
+            id: id || null,
+            callback: callback
+        }];
+        startWaitingForChanges(DB);
+    }
+};
+
+// Private
+API.callChangesListeners = function(DB, docs) {
+    $(window).trigger('docs-changed', [docs]);
+    // $.log("================== starting call changes listeners", db.uri, "doc
+	// count:", docs.length);
+    // var startime1 = +new Date;
+    if (changesListenersByDB[DB.uri]) {
+        var dbListeners = changesListenersByDB[DB.uri].slice(0);
+        dbListeners.forEach(function(listener) {
+            try {
+                // var startime2 = +new Date;
+                listener.callback(docs);
+                /*
+				 * var measured_time = +new Date - startime2; if (measured_time >
+				 * 300) { $.log(listener.callback.toString(), measured_time); }
+				 */
+            } catch(e) {
+                $.log("Error calling changes listener", e,
+                      e.stack && e.stack.toString());
+                API.error(e);
+
+            }
+        });
+    }
+    // var measured_time = +new Date - startime1;
+    // $.log('================== total time:', measured_time, 'ms');
+};
+
+// Private
+function startWaitingForChanges(DB) {
+    DB.info({
+        success: function(data) {
+            setTimeout(function() {
+                waitForChanges(DB, data.update_seq)
+            }, 2000);
+        }
+    });
+}
+
+function dbListenersExist(DB) {
+    return (changesListenersByDB[DB.uri] && changesListenersByDB[DB.uri].length > 0);
+}
+
+// Private
+function waitForChanges(DB, last_seq, errors_count, err_id, timeout) {
+    timeout = timeout || [0, 1000];
+
+    if (errors_count > 3) {
+      if (!err_id) {
+        $(window).trigger('spacedb-offline');
+        API.online = false;
+      }
+      err_id = err_id || uuid();
+      $(window).trigger('couchapp-error', {
+        _id: err_id,
+        message: timeout[1] <= 200000 ?
+                     'Oops, connection\'s lost.<br />' +
+                     'Trying to re-connect soon...' :
+                     'Oops, connection\'s lost.<br />' +
+                     'Trying to re-connect in ' +
+                     Math.round(timeout[1] / 1000) + ' sec...'
+      });
+    }
+
+    // I can't understand what is that but it doesn't work on stage.
+    // waitForChanges.previousListener &&
+	// waitForChanges.previousListener.abort();
+    // waitForChanges.previousListener =
+
+    errors_count = errors_count || 0;
+
+    DB.changes({
+        feed: "longpoll",
+        since: last_seq,
+        include_docs: true,
+        success: function(data) {
+            if (err_id) {
+              API.online = true;
+              API.offlineQueue.forEach(function(fn) {
+                try {
+                  fn();
+                } catch(e) {
+                }
+              });
+              API.offlineQueue = [];
+              $(window).trigger('spacedb-online');
+              $(window).trigger('couchapp-error', {
+                _id: err_id,
+                hide: true
+              });
+            }
+
+            var docs = data.results.map(function(seq) {
+                return seq.doc;
+            });
+            if (docs.length > 0)
+                API.callChangesListeners(DB, docs);
+
+            if (dbListenersExist(DB)) {
+                setTimeout(function() {
+                    waitForChanges(DB, data["last_seq"], 0);
+                }, 100);
+
+            } else {
+                delete changesListenersByDB[DB.uri];
+            }
+        },
+        error: function(status, error, reason, textStatus) {
+
+            if (dbListenersExist(DB)) {
+                // If reason of error was 'timeout' - wait 5 minutes, else 10 s
+
+                // 1 1
+                setTimeout(function() {
+                    waitForChanges(DB, last_seq, errors_count + 1, err_id,
+                                   errors_count > 3 ?
+                                      [timeout[1], timeout[0] + timeout[1]] :
+                                      timeout);
+                }, timeout[1]);
+
+            } else {
+                delete changesListenersByDB[DB.uri];
+            }
+        }
+    });
+}
 
 })();

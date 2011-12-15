@@ -14,6 +14,8 @@ function $$(node) {
         return (result === undefined || result === null) ? default_value : result;
       },
       set: function(key, value, fromUserStorage) {
+        // DB storage disabled.
+        fromUserStorage = true;
         try {
           if (!fromUserStorage && !(/^offline/.test(key))) {
             API.userStorage.set(key, value);
@@ -24,6 +26,8 @@ function $$(node) {
         }
       },
       del: function(key, fromUserStorage) {
+        // DB storage disabled.
+        fromUserStorage = true;
         try {
           if (!fromUserStorage && !(/^offline/.test(key))) {
             API.userStorage.unset(key);

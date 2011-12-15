@@ -22,15 +22,11 @@ function(e, match) {
     
     $.evently.connect($body, $(".twidget.filter", this), ["profilesLoaded"]);
     
-    $.evently.connect($("#notifications_count_widget"), $(".topics"), ["setNotificationsCount"]);
-    
     $.evently.connect($body, $statusForm, ['profileLoaded']);
     API.connectVisible($body, $tagsSystem, ["setFilter"]);
     API.connectVisible($body, $tagsUser, ["setFilter"]);
     $.evently.connect($body, $topicsList, ["setFilter"]);
     
-    $.evently.connect($("#id_topics"), $topicsList, ["topicsLoaded"]);
-
     $(".twidget.filter", this).evently("filterPanel", app);
     $spaceMenu.evently("space-menu", app);
     $statusForm.evently("basicForm", app);

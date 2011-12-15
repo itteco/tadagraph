@@ -1,8 +1,8 @@
-function(doc) {
-    if (doc.type == 'notification' && doc.ref.tags) {
+(function(doc) {
+    if (doc.type == 'status' && doc.tags) {
         var created_at = (new Date(doc.created_at)).getTime();
         var tagsDict = {};
-        var tags = doc.ref.tags;
+        var tags = doc.tags;
         for (var i = 0; i < tags.length; i++) {
             tagsDict[tags[i]] = true;
         }
@@ -10,4 +10,4 @@ function(doc) {
             emit(tag, created_at);
         }
     }
-}
+})

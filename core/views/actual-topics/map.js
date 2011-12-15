@@ -1,4 +1,4 @@
-function(doc) {
+(function(doc) {
     if (doc.created_at) {
         if (doc.topic) {
             emit([doc.db.type, doc.db.name, doc.topic._id], doc.created_at);
@@ -11,4 +11,4 @@ function(doc) {
             }
         }
     }
-}
+})

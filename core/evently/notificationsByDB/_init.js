@@ -9,7 +9,6 @@ function(e, options) {
     $$this.items = [];
     $$this.options = options;
     $$this.last_key = null;
-    $$this.newUnviewedItems = [];
     $$this.loading = false;
     $$this.filter = $.extend(true, {}, getFilter());
     $$this.lastPageLoaded = false;
@@ -18,24 +17,19 @@ function(e, options) {
     
     // TODO: if this get message before first page could be message repeating.
     
-    registerChangesListener(options.db, function(docs) {
-        var docsToMarkView = [];
+    $(window).bind('docs-changed', function(e, docs) {
         docs.forEach(function(doc) {
-            if (!doc._rev) {
-                $$().set('offline_doc-' + doc._id, doc, true);
-            } else {
-                $$().del('offline_doc-' + doc._id, true);
-            }
-        
             // Filter docs of this view.
             if (!doc._deleted && (!options.filterCallback || options.filterCallback(doc))) {
                 if (!doc._rev) {
-                  $this.trigger("renderNew", [doc]);                
-                  return;
+                    API.filterTopics(doc, function(_error, topics) {
+                        $this.trigger("renderNew", [doc, topics]);
+                        $(window).trigger('widget-content-changed', [$this, doc]);
+                    });
+                    return;
                 }
                 
                 API.cacheDoc(doc);
-                API.cacheDoc(doc.ref);
                 
                 // If doc not loaded yet.
                 if (!($$this.items[doc._id])) {
@@ -51,17 +45,10 @@ function(e, options) {
                     }
                     
                     if (!outOfViewDoc) {
-                        // If doc not viewed - mark viewed.
-                        if (API.isViewed && !API.isViewed(doc)) {
-                            if ($this.is(":visible")) {
-                                docsToMarkView.push(doc);
-                                
-                            } else {
-                                $$this.newUnviewedItems.push(doc);
-                            }
-                        }
-                       //var x = +new Date;                        
-                        $this.trigger("renderNew", [doc]);
+                        API.filterTopics(doc, function(_error, topics) {
+                            $this.trigger("renderNew", [doc, topics]);
+                            $(window).trigger('widget-content-changed', [$this, doc]);
+                        });
                         //console.log('newNotification -1', +new Date - x);
                         
                         //var x = +new Date;
@@ -73,8 +60,10 @@ function(e, options) {
                     }
                     
                 } else {
-                    //var x = +new Date;                        
-                    $this.trigger("renderNew", [doc]);
+                    API.filterTopics(doc, function(_error, topics) {                     
+                        $this.trigger("renderNew", [doc, topics]);
+                        $(window).trigger('widget-content-changed', [$this, doc]);
+                    });
                     //console.log('newNotification - 2', +new Date - x);
                 }
             }
@@ -82,7 +71,7 @@ function(e, options) {
             if (doc._deleted && doc._id && $$this.items[doc._id]) {
                 $.log("removing", doc._id);
                 var $item = $('li.item[data-id="' + doc._id + '"]', $this);
-                $item.css('background-color','#fffcd8');
+                $item.css('background-color', '#fffcd8');
                 $item.slideUp(250, function(){
                     $item.remove();
                 });
@@ -91,23 +80,9 @@ function(e, options) {
     });
     
     $('.flow .item', this).live('mouseenter mouseleave', function(event) {
-        if (event.type == 'mouseenter') {
-            $(this).addClass('state-hover');
-        } else {
-            $(this).removeClass('state-hover');
-        }
+        $(this).toggleClass('state-hover', event.type == 'mouseenter');
     });
 
-    $('.stream .item.clickable a', this).live('click', function(e) {
-        e.stopPropagation();
-    });
-
-    $('.stream .item.clickable', this).live('click', function() {
-        if ($(this).data('url') && !$(this).hasClass('disabled')) {
-            window.location.href = $(this).data('url');
-        }
-    });
-    
     $("#id_thread_preview").trigger("registerItems", [$(".flow .item", this)]);
     
     var $window = $(window);
@@ -123,48 +98,60 @@ function(e, options) {
         }
     });
     
-    
-    var userDB = API.userDB();
-
-    // Load offline docs
-    var bulk = {};
-    $$().all().filter(function(pair) {
-        return /^offline_doc-/.test(pair.key) &&
-        pair.value.created_by && 
-        (pair.value.created_by.id == API.username() ||
-            pair.value.created_by.nickname == API.username());
-    }).forEach(function(pair) {
-        var doc = pair.value;
-        callChangesListeners(userDB, [doc]);
-      
-        // Create bulk queue for that docs
-        if (doc._id) {
-            var DB = API.filterDB({parent: doc});
-            bulk[DB.uri] = bulk[DB.uri] || {
-                db: DB,
-                docs: []
-            };
-            bulk[DB.uri].docs.push(doc);
-        }
-    });
-    
-    // Save all docs from bulk queue (ignore conflicts and any errors)
-    for (var i in bulk) {
-        if (!bulk.hasOwnProperty(i)) continue;
-      
-        (function(i, bulk) {
-            bulk.db.bulkSave(bulk.docs, {
-                success: function() {
-                    callChangesListeners(userDB, bulk.docs.map(function(doc) {
-                        if (doc.type == 'notification') {
-                            doc.viewed_at = new Date();
-                        }
-                        doc._rev = 'saved';
-                        return doc;
-                    }));
-                },
-                error: function() {}
-            });
-        })(i, bulk[i]); 
-    }
+//    
+//    var userDB = API.userDB();
+//
+//    // Load offline docs
+//    var bulk = {};
+//    var hooks = {};
+//    $$().all().filter(function(pair) {
+//        return /^offline_doc-/.test(pair.key) &&
+//        pair.value.created_by && 
+//        (pair.value.created_by.id == API.username() ||
+//            pair.value.created_by.nickname == API.username());
+//    }).forEach(function(pair) {
+//        var doc = pair.value;
+////        API.callChangesListeners(userDB, [doc]);
+//      
+//        // Create bulk queue for that docs
+//        if (doc._id) {
+//            var DB = API.filterDB({parent: doc});
+//            bulk[DB.uri] = bulk[DB.uri] || {
+//                db: DB,
+//                docs: []
+//            };
+//            hooks[doc._id] = doc._hooks;
+//            delete doc._hooks;
+//            bulk[DB.uri].docs.push(doc);
+//        }
+//    });
+//    
+//    // Save all docs from bulk queue (ignore conflicts and any errors)
+//    for (var i in bulk) {
+//        if (!bulk.hasOwnProperty(i)) continue;
+//      
+//        (function(i, bulk) {
+//            bulk.db.bulkSave(bulk.docs, {
+//                success: function(data) {
+//                    data.forEach(function(res, i) {
+//                        var doc = bulk.docs[i];
+//                        if (res.rev) {
+//                            var docHooks = hooks[res.id];
+//                            if (docHooks && 'post-store' in docHooks) {
+//                                docHooks['post-store'].forEach(function(hook) {
+//                                    hook(doc);
+//                                });
+//                            }
+//                            doc._rev = res.rev;
+//                        } else {
+//                            // If update conflict/error - mark as deleted. Changes listener will delete in from offline storage.
+//                            doc._deleted = true;
+//                        }
+//                    });
+//                    API.callChangesListeners(userDB, bulk.docs);
+//                },
+//                error: function() {}
+//            });
+//        })(i, bulk[i]); 
+//    }
 }

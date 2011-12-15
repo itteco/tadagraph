@@ -30,7 +30,6 @@ function(e) {
         {id: "hide-archived", title: "hide archived"},
         {id: "hide-empty", title: "hide empty lists"},
         {id: "hide-later", title: "hide later"},
-        {id: "hide-read", title: "unread"},
         {id: "show-following", title: "following"},
         {id: "show-followers", title: "followers"},
         {id: "show-project-peers", title: "project peers"},
@@ -42,7 +41,7 @@ function(e) {
     
     $$this.lists.members = function() {
         var space = API.filterSpace(getFilter());
-        return space? space.allMembers || []: [];
+        return space? space._allMembers || []: [];
     }
     
     $$this.dialogs = {};

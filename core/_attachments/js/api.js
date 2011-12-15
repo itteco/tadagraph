@@ -83,7 +83,7 @@ API.interceptError = function (cb){
                 cb(null, data);
             }
         }
-   }
+    }
 };
 
 // performs remote API invocation with [url*], [opts], and [cb]

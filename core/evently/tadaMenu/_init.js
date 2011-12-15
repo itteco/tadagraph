@@ -21,19 +21,19 @@ function() {
                 var specMessage = $(".message", $item).length > 0 || $item.hasClass("message") || $item.hasClass("compact");
                 
                 var owner = doc.created_by.id == API.username();
-                if (!specMessage && (owner || space && space.isAdmin)) {
+                if (!specMessage && (owner || space && space._admin)) {
                     $menu.find(".button.delete").parent().show();
                     
                 } else {
                     $menu.find(".button.delete").parent().hide();
                 }
                 
-                if (!owner && doc.type == "notification" || specMessage) {
-                    $menu.find(".button.archive").parent().show();
-                    
-                } else {
+//                if (!owner && doc.type == "notification" || specMessage) {
+//                    $menu.find(".button.archive").parent().show();
+//                    
+//                } else {
                     $menu.find(".button.archive").parent().hide();
-                }
+//                }
                 
                 if (!specMessage) {
                     $menu.find(".button.edit").parent().show();
@@ -49,19 +49,14 @@ function() {
                     $menu.find(".button.forward").parent().hide();
                 }
                 
-                if (space && space.isAdmin && space.allowPublish) {
-                    $menu.find(".button.publish").parent().show();
+                if (space && space._allowPublish && (space._admin || space._virtual_admin)) {
+                    $menu.find('.button.publish').parent().show();
                     
                     var _doc = doc;
-                    if (doc.ref)
-                        _doc = doc.ref;
-                    if (_doc.tags && _doc.tags.indexOf("public") > -1) {
-                        $menu.find(".button.publish").addClass("published");
-                    } else {
-                        $menu.find(".button.publish").removeClass("published");
-                    }
+                    $menu.find('.button.publish').toggleClass('published', _doc.tags && _doc.tags.indexOf('public') > -1);
+                    
                 } else {
-                    $menu.find(".button.publish").parent().hide();
+                    $menu.find('.button.publish').parent().hide();
                 }
                 
                 $item.prepend($menu);

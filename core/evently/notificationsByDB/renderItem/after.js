@@ -20,8 +20,9 @@ function(e, item) {
     if (sinceStarred && !showStarred) $item.hide();
     if (!sinceStarred && showStarred) $item.hide();
     
-    if ($item.is('.new-item'))
-        API.queueNewItems($item);
+    if ($item.is('.new-item')) {
+        $item.css('background-color', '#f5f9fb');
+    }
     
     APPS.core.require('vendor/tadagraph/lib/oembed').wrap($item);
 }

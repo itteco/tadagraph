@@ -23,7 +23,7 @@ function(e) {
 
         var dsOptions = source.data(filter);
         
-        var DB = API.userDB();
+        var DB = API.filterDB(filter);
         $widget.evently(
             "notificationsContainer", 
             $$this.app, [$.extend({db: DB}, dsOptions)]);
